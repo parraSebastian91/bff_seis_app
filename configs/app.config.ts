@@ -10,6 +10,11 @@ export default () => ({
     schema: 'core',
     synchronize: true,
   },
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT ?? '6379', 10) || 6379,
+    ttl: parseInt(process.env.REDIS_TTL ?? '3600', 10) || 3600, // 1 hora por defecto
+  },
   vault: {
     addr: process.env.VAULT_ADDR || 'http://vault:8200',
     token: process.env.VAULT_TOKEN || 'myroot',

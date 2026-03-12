@@ -1,3 +1,4 @@
+import { UsuarioUserCaseImplService } from './core/application/useCase/usuario/usuario.usercase.impl.service';
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import configurations from './../configs/app.config';
@@ -12,7 +13,6 @@ import { InfrastructureModule } from './infrastructure/infrastructure.module';
       envFilePath: ['.env']
     }),
   ],
-  providers: [
-  ],
+  providers: [],
 })
 export class AppModule { }
