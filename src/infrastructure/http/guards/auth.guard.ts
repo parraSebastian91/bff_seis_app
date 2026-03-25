@@ -1,24 +1,21 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Inject, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
-import { AccessTokenPayload } from '../model/jwt.dto';
-
+import type { ISessionUseCase } from 'src/core/domain/ports/inbound/sessionUseCase.interface';
+import { validateQuery } from 'src/core/application/useCase/session/query/validate.query';
+import { AUTH_USE_CASE } from 'src/core/application/application.module';
 @Injectable()
 export class AuthGuard implements CanActivate {
   private readonly logger = new Logger(AuthGuard.name);
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private jwtService: JwtService,
+    @Inject(AUTH_USE_CASE) private authService: ISessionUseCase,
     private reflector: Reflector,
   ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -27,78 +24,34 @@ export class AuthGuard implements CanActivate {
     if (isPublic || request.path === '/metrics') {
       return true;
     }
-    const session = await this.extractSession(request);
-
-    // this.logger.log(`Session completa:`, JSON.stringify(session || {}));
-
-    if (!session) {
-      this.logger.error('No se encontró sesión en la solicitud');
-      throw new UnauthorizedException('No hay sesión activa. Por favor inicia sesión.');
+    const queryValidate: validateQuery = {
+      sessionId: await this.extractSession(request)
     }
-
-    // if (!session.accessToken) {
-    //   this.logger.error('Session existe pero accessToken es null/undefined');
-    //   throw new UnauthorizedException('No hay token en la sesión.');
-    // }
-
-    // this.logger.log(`Session accessToken (primeros 30 chars): ${session.accessToken?.substring(0, 30)}`);
-
-    try {
-      // Validar el token usando el servicio de autenticación
-      const token = await this.jwtService.verifyAsync(session);
-      if (!token) {
-        throw new UnauthorizedException('Token inválido o expirado');
-      }
-
-      // Verificar la estructura del token JWT para obtener información adicional
-      const payload = this.jwtService.decode(session) as AccessTokenPayload;
-      this.logger.log(`JWT decoded payload:`, JSON.stringify(payload || {}));
-
-      if (!payload) {
-        throw new UnauthorizedException('Token malformado');
-      }
-
-      // Agregar información del usuario al request para uso posterior
-      request['user'] = {
-        userId: payload.userId || payload.userUuid,
-        username: payload.username,
-        roles: payload.roles || [],
-        permissions: payload.permissions || [],
-        accessToken: session,
-        typeDevice: payload.typeDevice || ''
-      };
-      // ✅ Calcular tiempos
-      const ahora = Math.floor(Date.now() / 1000); // timestamp actual en segundos
-      // const iat = payload.iat || ahora; // issued at
-      // const exp = payload.exp; // expiration time
-
-      // const tiempoLogeado = ahora - iat; // segundos desde que se emitió
-      // const tiempoRestante = exp - ahora; // segundos hasta expiración
-
-      // this.logger.log(`⏱️ Token - Logeado: ${tiempoLogeado}s | Expira en: ${tiempoRestante}s`);
-      // this.logger.log(`✅ Usuario autenticado: ${request['user'].username} (ID: ${request['user'].userId})`);
-
-      return true;
-    } catch (error) {
-      this.logger.error(`AuthGuard error:`, error);
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException('Error al validar el token');
-    }
+    return await this.authService.executeValidateSession(queryValidate);
   }
 
   private async extractSession(request: Request): Promise<string> {
-    const session = request.cookies['auth.session'].split(':')[1].split('.')[0];
-    if (!session) {
-      this.logger.error('No se encontró objeto session en la solicitud');
-      throw new UnauthorizedException('No hay sesión activa. Por favor inicia sesión.');
+    const sessionCookie = request.cookies;
+    if (!sessionCookie) {
+      this.logger.warn('No session cookie found in the request');
+      throw new UnauthorizedException('No session cookie found');
     }
-    const cachedSession = await this.cacheManager.get<string>(`session:${session}`);
-    if (!cachedSession) {
-      this.logger.error('No se encontró sesión en la caché');
-      throw new UnauthorizedException('No hay sesión activa. Por favor inicia sesión.');
+
+    const rawSession = sessionCookie['auth.session'];
+    if (!rawSession || typeof rawSession !== 'string') {
+      this.logger.warn('Cookie auth.session ausente o inválida');
+      throw new UnauthorizedException('No session cookie found');
     }
-    return JSON.parse(cachedSession);
+
+    const decodedSession = decodeURIComponent(rawSession);
+    const unsigned = decodedSession.startsWith('s:') ? decodedSession.slice(2) : decodedSession;
+
+    if (!unsigned) {
+      this.logger.warn('No fue posible extraer sessionId desde auth.session');
+      throw new UnauthorizedException('Invalid session cookie format');
+    }
+
+    this.logger.log(`Session extraída desde cookie auth.session`);
+    return unsigned;
   }
 }

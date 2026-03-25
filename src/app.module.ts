@@ -1,18 +1,26 @@
-import { UsuarioUserCaseImplService } from './core/application/useCase/usuario/usuario.usercase.impl.service';
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import configurations from './../configs/app.config';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { CoreModule } from './core/core.module';
+import { CacheRepositoryAdapter } from './infrastructure/adapters/DB/cache/cacheRepository.adapter';
 
 @Module({
   imports: [
-    InfrastructureModule,
     ConfigModule.forRoot({
       load: [configurations],
       isGlobal: true,
       envFilePath: ['.env']
     }),
+    CoreModule.register({
+      modules: [InfrastructureModule],
+      adapters: {
+        cacheRepositoryAdapter: CacheRepositoryAdapter
+      },
+    }),
   ],
-  providers: [],
+  providers: [
+
+  ],
 })
 export class AppModule { }

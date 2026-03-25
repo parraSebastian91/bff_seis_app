@@ -8,9 +8,9 @@ interface VaultSecrets {
 }
 
 const SECRETS = {
-  DB_POSTGRES: 'db-seis-postgres',
-  CACHE_REDIS: 'cache-seis-redis',
-  JWT:'JWT'
+  DB_POSTGRES: process.env.SECRET_DB_KEY || 'db-seis-postgres',
+  CACHE_REDIS: process.env.SECRET_REDIS_KEY || 'cache-seis-redis',
+  JWT: process.env.SECRET_JWT_KEY || 'JWT'
 }
 
 @Injectable()
