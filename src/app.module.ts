@@ -1,10 +1,26 @@
+import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import configurations from './../configs/app.config';
+import { InfrastructureModule } from './infrastructure/infrastructure.module';
+import { CoreModule } from './core/core.module';
+import { CacheRepositoryAdapter } from './infrastructure/adapters/DB/cache/cacheRepository.adapter';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      load: [configurations],
+      isGlobal: true,
+      envFilePath: ['.env']
+    }),
+    CoreModule.register({
+      modules: [InfrastructureModule],
+      adapters: {
+        cacheRepositoryAdapter: CacheRepositoryAdapter
+      },
+    }),
+  ],
+  providers: [
+
+  ],
 })
-export class AppModule {}
+export class AppModule { }
