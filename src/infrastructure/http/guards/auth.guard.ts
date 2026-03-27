@@ -45,13 +45,14 @@ export class AuthGuard implements CanActivate {
 
     const decodedSession = decodeURIComponent(rawSession);
     const unsigned = decodedSession.startsWith('s:') ? decodedSession.slice(2) : decodedSession;
+    const sessionId = unsigned.split('.')[0];
 
-    if (!unsigned) {
+    if (!sessionId) {
       this.logger.warn('No fue posible extraer sessionId desde auth.session');
       throw new UnauthorizedException('Invalid session cookie format');
     }
 
     this.logger.log(`Session extraída desde cookie auth.session`);
-    return unsigned;
+    return sessionId;
   }
 }

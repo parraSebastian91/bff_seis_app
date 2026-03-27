@@ -15,7 +15,7 @@ async function preloadVaultToEnv() {
     token: process.env.VAULT_TOKEN || 'myroot',
   });
 
-  const paths = ['JWT', 'db-seis-postgres', 'redis', 'shared'];
+  const paths = ['JWT', 'DB-SEIS-POSTGRES', 'REDIS', 'SHARED'];
 
   for (const path of paths) {
     try {
@@ -55,10 +55,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   await checkRedisOnStartup(app);
   app.use(cookieParser());
+  const configuredOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const defaultOrigins = ['http://localhost:4200', 'http://localhost:4201', 'http://localhost:4300', 'http://localhost:3000'];
+  const corsOrigins = configuredOrigins.length > 0 ? configuredOrigins : defaultOrigins;
+
   app.enableCors({
-    origin: '*', // Permitir todas las fuentes (en producción, restringir a dominios específicos)
+    origin: corsOrigins,
+    credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept, Authorization',
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
   });
 
   await app.listen(process.env.PORT ?? 3000).then(() => {

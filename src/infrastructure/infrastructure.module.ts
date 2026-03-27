@@ -25,7 +25,7 @@ import { CacheRepositoryAdapter } from './adapters/DB/cache/cacheRepository.adap
                 const redisDb = configService.get<number>('redis.db') ?? 0;
 
                 return {
-                    store: new KeyvRedis(`redis://${redisHost}:${redisPort}/${redisDb}`),
+                    stores: [new KeyvRedis(`redis://${redisHost}:${redisPort}/${redisDb}`)],
                     ttl: configService.get<number>('redis.ttl') || 3600, // 1 hora por defecto
                 };
             },

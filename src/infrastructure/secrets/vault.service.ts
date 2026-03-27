@@ -8,9 +8,10 @@ interface VaultSecrets {
 }
 
 const SECRETS = {
-  DB_POSTGRES: process.env.SECRET_DB_KEY || 'db-seis-postgres',
-  CACHE_REDIS: process.env.SECRET_REDIS_KEY || 'cache-seis-redis',
-  JWT: process.env.SECRET_JWT_KEY || 'JWT'
+  DB_POSTGRES: process.env.SECRET_DB_KEY || 'DB-SEIS-POSTGRES',
+  CACHE_REDIS: process.env.SECRET_REDIS_KEY || 'CACHE-SEIS-REDIS',
+  JWT: process.env.SECRET_JWT_KEY || 'JWT',
+  SHARED: process.env.SECRET_SHARED || 'SHARED'
 }
 
 @Injectable()
@@ -71,12 +72,12 @@ export class VaultService implements OnModuleInit {
       this.secrets.set(SECRETS.JWT, jwtSecrets);
 
       // Cargar secretos de Redis
-      const redisSecrets = await this.readSecret('redis');
-      this.secrets.set('redis', redisSecrets);
+      const redisSecrets = await this.readSecret(SECRETS.CACHE_REDIS);
+      this.secrets.set(SECRETS.CACHE_REDIS, redisSecrets);
 
       // Cargar secretos compartidos
-      const sharedSecrets = await this.readSecret('shared');
-      this.secrets.set('shared', sharedSecrets);
+      const sharedSecrets = await this.readSecret(SECRETS.SHARED);
+      this.secrets.set(SECRETS.SHARED, sharedSecrets);
 
       this.logger.log(`Loaded ${this.secrets.size} secret paths`);
     } catch (error) {
