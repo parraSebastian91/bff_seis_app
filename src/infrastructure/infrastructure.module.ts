@@ -8,7 +8,7 @@ import { HttpModule } from './http/http.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis from '@keyv/redis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CacheRepositoryAdapter } from './adapters/DB/cache/cacheRepository.adapter';
+import { CacheRepositoryAdapter } from './adapters/outbound/cache/cacheRepository.adapter';
 
 @Module({
     imports: [

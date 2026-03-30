@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import configurations from './../configs/app.config';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { CoreModule } from './core/core.module';
-import { CacheRepositoryAdapter } from './infrastructure/adapters/DB/cache/cacheRepository.adapter';
+import { CacheRepositoryAdapter } from './infrastructure/adapters/outbound/cache/cacheRepository.adapter';
 
 @Module({
   imports: [
