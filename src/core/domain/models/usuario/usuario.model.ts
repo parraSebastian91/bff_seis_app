@@ -4,12 +4,11 @@ import { NombrePersona } from "./value-object/nombrePersona.vo";
 
 
 export class UsuarioModel {
-    uuid: UUID;
+    uuid: string;
     username: string;
     nombres: NombrePersona;
     ap_paterno: NombrePersona;
     ap_materno: NombrePersona;
     email: Correo;
-    password: string;
 }
 

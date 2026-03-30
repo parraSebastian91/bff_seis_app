@@ -6,11 +6,13 @@ import { DynamicModule, Global, Module, Type } from '@nestjs/common';
 import { ICacheRepository } from './domain/ports/outbound/CacheRepository.interface';
 import { ApplicationModule } from './application/application.module';
 import { DomainModule } from './domain/domain.module';
+import { ICoreService } from './domain/ports/outbound/core.service.interface';
 
 export type CoreModuleOptions = {
     modules: any[];
     adapters: {
-        cacheRepositoryAdapter: Type<ICacheRepository>
+        cacheRepositoryAdapter: Type<ICacheRepository>,
+        coreServiceClientAdapter: Type<ICoreService>
     }
 }
 
@@ -22,6 +24,7 @@ export class CoreModule {
         const { adapters, modules } = options;
         const {
             cacheRepositoryAdapter,
+            coreServiceClientAdapter
         } = adapters;
 
         return {
@@ -31,7 +34,8 @@ export class CoreModule {
                 ApplicationModule.register({
                     modules,
                     adapters: {
-                        cacheRepository: cacheRepositoryAdapter,
+                        cacheRepositoryAdapter: cacheRepositoryAdapter,
+                        coreServiceClientAdapter: coreServiceClientAdapter
                     },
                 }),
             ],

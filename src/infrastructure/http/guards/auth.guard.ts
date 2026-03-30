@@ -27,7 +27,10 @@ export class AuthGuard implements CanActivate {
     const queryValidate: validateQuery = {
       sessionId: await this.extractSession(request)
     }
-    return await this.authService.executeValidateSession(queryValidate);
+
+    request["user"] = await this.authService.executeValidateSession(queryValidate)
+
+    return !!request["user"];
   }
 
   private async extractSession(request: Request): Promise<string> {

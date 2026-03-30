@@ -7,15 +7,20 @@ import { ICacheRepository } from '../domain/ports/outbound/CacheRepository.inter
 import { SessionUseCase } from './useCase/session/session.usecase';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsuarioUserCaseImplService } from './useCase/usuario/usuario.usercase.impl.service';
+import { ICoreService } from '../domain/ports/outbound/core.service.interface';
 
 export type ApplicationModuleOptions = {
     modules: any[];
     adapters: {
-        cacheRepository: Type<ICacheRepository>;
+        cacheRepositoryAdapter: Type<ICacheRepository>;
+        coreServiceClientAdapter: Type<ICoreService>;
+
     }
 }
 
 export const AUTH_USE_CASE = 'AUTH_USE_CASE';
+export const USUARIO_USE_CASE = 'USUARIO_USE_CASE';
 
 @Module({})
 export class ApplicationModule {
@@ -24,13 +29,28 @@ export class ApplicationModule {
 
         const { adapters, modules } = options;
         const {
-            cacheRepository,
+            cacheRepositoryAdapter,
+            coreServiceClientAdapter
         } = adapters;
+
+        const usuarioUseCaseProvider = {
+            provide: USUARIO_USE_CASE,
+            inject: [
+                coreServiceClientAdapter
+            ],
+            useFactory(
+                coreServiceClient: ICoreService
+            ) {
+                return new UsuarioUserCaseImplService(
+                    coreServiceClient
+                );
+            },
+        };
 
         const authUseCaseProvider = {
             provide: AUTH_USE_CASE,
             inject: [
-                cacheRepository,
+                cacheRepositoryAdapter,
                 JwtService,
             ],
             useFactory(
@@ -61,10 +81,12 @@ export class ApplicationModule {
                 ...modules,
             ],
             providers: [
+                usuarioUseCaseProvider,
                 authUseCaseProvider
             ],
             exports: [
-                AUTH_USE_CASE
+                AUTH_USE_CASE,
+                USUARIO_USE_CASE,
             ],
         };
     }

@@ -1,7 +1,11 @@
 import { UsuarioModel } from "../../models/usuario/usuario.model";
 
+
+export const CORE_SERVICE_CLIENT = 'CORE_SERVICE_CLIENT';
+export const PAYMENTS_CLIENT = 'PAYMENTS_CLIENT';
+
 export interface ICoreService {
-    
-    GetUserInformation(uuid: string): Promise<UsuarioModel>;
+
+    GetUserProfile(uuid: string): Promise<UsuarioModel>;
 
 }

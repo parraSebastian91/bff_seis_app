@@ -26,7 +26,16 @@ export default () => ({
     access_secret: process.env.JWT_ACCESS_SECRET || 'jwt_access_secret',
     access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN || '3600',
     admin_expires_in: process.env.JWT_ACCESS_ADMIN_EXPIRES_IN || '7200',
+  },
+  externalServices: {
+    core: {
+      baseUrl: process.env.CORE_SERVICE_BASE_URL || 'http://ms_core:3001',
+      timeout: parseInt(process.env.CORE_SERVICE_TIMEOUT ?? '8000', 10),
+    },
+    payments: {
+      baseUrl: process.env.PAYMENTS_SERVICE_URL || 'http://localhost:3002',
+      timeout: parseInt(process.env.PAYMENTS_SERVICE_TIMEOUT ?? '8000', 10),
+    },
   }
-
 });
 

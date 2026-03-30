@@ -1,8 +1,9 @@
 import { Logger, UnauthorizedException } from "@nestjs/common";
 import { ISessionUseCase } from "src/core/domain/ports/inbound/sessionUseCase.interface";
 import { validateQuery } from "./query/validate.query";
-import { ICacheRepository } from "src/core/domain/ports/outbound/CacheRepository.interface";
+import { ICacheRepository } from "./../../../../core/domain/ports/outbound/CacheRepository.interface";
 import { JwtService } from "@nestjs/jwt";
+import { AccessTokenPayload } from "./../../../../core/domain/models/jwt.model";
 
 export class SessionUseCase implements ISessionUseCase {
     private readonly logger = new Logger(SessionUseCase.name);
@@ -10,10 +11,9 @@ export class SessionUseCase implements ISessionUseCase {
     constructor(
         private cacheRepository: ICacheRepository,
         private jwtService: JwtService,
-    )
-    {}
+    ) { }
 
-    async executeValidateSession(query: validateQuery): Promise<any> {
+    async executeValidateSession(query: validateQuery): Promise<{ userUuid: string, username: string, accessToken: string }> {
         console.log('Validating session with ID:', query.sessionId);
         const session = await this.cacheRepository.getAccessToken(query.sessionId);
         if (!session) {
@@ -26,7 +26,7 @@ export class SessionUseCase implements ISessionUseCase {
             throw new UnauthorizedException('Por favor inicia sesión.');
         }
 
-        const payload = this.jwtService.decode(session);
+        const payload = this.jwtService.decode<AccessTokenPayload>(session);
         if (!payload) {
             this.logger.error('Session existe pero accessToken CORRUPTO');
             throw new UnauthorizedException('Por favor inicia sesión.');
@@ -41,6 +41,10 @@ export class SessionUseCase implements ISessionUseCase {
         // this.logger.log(`⏱️ Token - Logeado: ${tiempoLogeado}s | Expira en: ${tiempoRestante}s`);
         // this.logger.log(`✅ Usuario autenticado: ${request['user'].username} (ID: ${request['user'].userId})`);
 
-        return true;
+        return {
+            userUuid: payload.userUuid,
+            username: payload.username,
+            accessToken: session,
+        };
     }
 }
