@@ -1,4 +1,5 @@
 import { Catch, ExceptionFilter, ArgumentsHost, Logger, HttpStatus, ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { TokenExpiredError } from "@nestjs/jwt";
 import { Request, Response } from "express";
 
 @Catch()
@@ -15,6 +16,11 @@ export class ErrorHandler implements ExceptionFilter {
             Logger.warn(`UnauthorizedException: ${exception.message}`);
             status = HttpStatus.UNAUTHORIZED;
             message = exception.message;
+        }
+        if(exception instanceof TokenExpiredError) {
+            Logger.warn(`TokenExpiredError: ${exception.message}`);
+            status = HttpStatus.UNAUTHORIZED;
+            message = "Token expired";
         }
         else {
             Logger.error(`Unexpected error: ${exception.message}`, exception.stack);

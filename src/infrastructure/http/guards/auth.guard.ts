@@ -55,7 +55,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid session cookie format');
     }
 
-    this.logger.log(`Session extraída desde cookie auth.session`);
+    this.logger.log(`Session Activa: ${sessionId}`);
     return sessionId;
   }
 }

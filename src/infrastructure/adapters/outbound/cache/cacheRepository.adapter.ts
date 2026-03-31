@@ -57,7 +57,6 @@ export class CacheRepositoryAdapter implements ICacheRepository {
 
         for (const key of keysToTry) {
             const redisData = await this.redisStore.get(key);
-            console.log(`Trying redis key: ${key} - Found: ${!!redisData}`);
             if (redisData) {
                 const token = this.extractTokenFromCacheValue(redisData);
                 if (token) {
@@ -66,7 +65,6 @@ export class CacheRepositoryAdapter implements ICacheRepository {
             }
 
             const data = await this.cacheManager.get<unknown>(key);
-            console.log(`Trying cache key fallback: ${key} - Found: ${!!data}`);
             if (data) {
                 const token = this.extractTokenFromCacheValue(data);
                 if (token) {

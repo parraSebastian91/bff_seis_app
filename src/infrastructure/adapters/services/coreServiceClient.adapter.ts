@@ -7,34 +7,36 @@ import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundExcep
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { UsuarioModel } from './../../../core/domain/models/usuario/usuario.model';
-import { Correo } from './../../../core/domain/models/usuario/value-object/correo.vo';
-import { NombrePersona } from './../../../core/domain/models/usuario/value-object/nombrePersona.vo';
 import { ICoreService, CORE_SERVICE_CLIENT } from './../../../core/domain/ports/outbound/core.service.interface';
 import { UserProfileDTO } from 'src/infrastructure/dto/UserCoreService.dto';
-
-
-type CoreUserResponse = {
-    uuid: string;
-    username: string;
-    nombres: string;
-    ap_paterno: string;
-    ap_materno: string;
-    email: string;
-    password?: string;
-};
+import { SystemNavigationDTO } from 'src/infrastructure/dto/systemNavigation.dto';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
     private readonly logger = new Logger(CoreServiceClientAdapter.name);
     constructor(
-        @Inject(CORE_SERVICE_CLIENT) private readonly usersClient: AxiosInstance,
+        @Inject(CORE_SERVICE_CLIENT) private readonly coreClient: AxiosInstance,
     ) { }
     async GetUserProfile(uuid: string): Promise<UsuarioModel> {
         try {
-            console.log(`Consultando servicio Core para obtener perfil del usuario ${uuid}`);
-            const { data } = await this.usersClient.get<UserProfileDTO>(`/usuario/profile/${uuid}`);
+            const { data } = await this.coreClient.get<UserProfileDTO>(`/usuario/profile/${uuid}`);
             this.logger.debug(`Respuesta del servicio Core: ${JSON.stringify(data)}`);
-            return UserProfileDTO.toModel(data); ;
+            return UserProfileDTO.toModel(data);;
+        } catch (error) {
+            if (isAxiosError(error) && error.response?.status === 404) {
+                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
+            }
+            this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message}`, error.stack);
+            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
+            throw new InternalServerErrorException('Error consultando servicio Core');
+        }
+    }
+
+    async GetPortalMenuByUsuario(uuid: string): Promise<any> {
+        try {
+            const { data } = await this.coreClient.get<SystemNavigationDTO>(`/usuario/profile/navigation/${uuid}`);
+            
+            return SystemNavigationDTO.toModel(data);
         } catch (error) {
             if (isAxiosError(error) && error.response?.status === 404) {
                 throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);

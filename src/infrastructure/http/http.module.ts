@@ -14,6 +14,7 @@ import { LoggerInterceptor } from './middleware/loggin.interceptor';
 import { HealthCheckController } from './controllers/healthcheck.controller';
 import { AccessTokenInterceptor } from './middleware/access-token.interceptor';
 import { AccessTokenContext } from './middleware/access-token.context';
+import { PortalCoreController } from './controllers/portal-core.controller';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { AccessTokenContext } from './middleware/access-token.context';
     ],
     controllers: [
         UsuariosBffController,
+        PortalCoreController,
         HealthCheckController
     ],
     providers: [

@@ -9,6 +9,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsuarioUserCaseImplService } from './useCase/usuario/usuario.usercase.impl.service';
 import { ICoreService } from '../domain/ports/outbound/core.service.interface';
+import { PortalUseCaseService } from './useCase/portal/portal-use-case.service';
 
 export type ApplicationModuleOptions = {
     modules: any[];
@@ -21,6 +22,7 @@ export type ApplicationModuleOptions = {
 
 export const AUTH_USE_CASE = 'AUTH_USE_CASE';
 export const USUARIO_USE_CASE = 'USUARIO_USE_CASE';
+export const PORTAL_USE_CASE = 'PORTAL_USE_CASE';
 
 @Module({})
 export class ApplicationModule {
@@ -64,6 +66,21 @@ export class ApplicationModule {
             },
         };
 
+        const portalUseCaseProvider = {
+            provide: PORTAL_USE_CASE,
+            inject: [
+                coreServiceClientAdapter
+            ],
+            useFactory(
+                coreServiceClient: ICoreService
+            ) {
+                return new PortalUseCaseService(
+                    coreServiceClient
+                );
+            },
+        };
+
+
         return {
             module: ApplicationModule,
             imports: [
@@ -82,11 +99,13 @@ export class ApplicationModule {
             ],
             providers: [
                 usuarioUseCaseProvider,
-                authUseCaseProvider
+                authUseCaseProvider,
+                portalUseCaseProvider
             ],
             exports: [
                 AUTH_USE_CASE,
                 USUARIO_USE_CASE,
+                PORTAL_USE_CASE,
             ],
         };
     }

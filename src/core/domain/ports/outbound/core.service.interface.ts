@@ -7,5 +7,6 @@ export const PAYMENTS_CLIENT = 'PAYMENTS_CLIENT';
 export interface ICoreService {
 
     GetUserProfile(uuid: string): Promise<UsuarioModel>;
+    GetPortalMenuByUsuario(uuid: string): Promise<UsuarioModel>;
 
 }
