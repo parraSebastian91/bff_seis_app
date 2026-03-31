@@ -7,6 +7,7 @@ import type { Request, Response } from 'express';
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
 import { Public } from '../decorators/public.decorator';
 import  type { IUsuarioUserCase } from './../../../core/domain/ports/inbound/UsuarioUseCase.interface';
+import { UserProfileDTO } from 'src/infrastructure/dto/UserCoreService.dto';
 
 @Controller("usuario")
 @UseFilters(ErrorHandler)
@@ -40,7 +41,7 @@ export class UsuariosBffController {
 
         return response.status(200).json({
             message: "Informacion del usuario obtenida correctamente",
-            data: usuario,
+            data: UserProfileDTO.fromModel(usuario),
         });
 
     }

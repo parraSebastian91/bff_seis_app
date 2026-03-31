@@ -34,14 +34,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             console.log(`Consultando servicio Core para obtener perfil del usuario ${uuid}`);
             const { data } = await this.usersClient.get<UserProfileDTO>(`/usuario/profile/${uuid}`);
             this.logger.debug(`Respuesta del servicio Core: ${JSON.stringify(data)}`);
-            const user = new UsuarioModel();
-            user.uuid = uuid; // Convertir string a UUID usando URL
-            user.username = data.username;
-            user.nombres = new NombrePersona(data.nombres);
-            user.ap_paterno = new NombrePersona(data.apellido_paterno);
-            user.ap_materno = new NombrePersona(data.apellido_materno);
-            user.email = new Correo(data.correo);
-            return user;
+            return UserProfileDTO.toModel(data); ;
         } catch (error) {
             if (isAxiosError(error) && error.response?.status === 404) {
                 throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);

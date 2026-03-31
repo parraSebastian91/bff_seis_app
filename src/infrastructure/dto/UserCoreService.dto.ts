@@ -1,3 +1,8 @@
+import { DocumentoContacto } from "src/core/domain/models/usuario/value-object/documentoContacto.model";
+import { UsuarioModel } from "src/core/domain/models/usuario/usuario.model";
+import { Correo } from "src/core/domain/models/usuario/value-object/correo.vo";
+import { NombrePersona } from "src/core/domain/models/usuario/value-object/nombrePersona.vo";
+
 export class UserProfileDTO {
     username: string;
     ingreso: Date;
@@ -15,21 +20,39 @@ export class UserProfileDTO {
     avatar: string; 
     tipo_contacto: string;
 
-    static normalize(data: any): UserProfileDTO {
-        const dto = new UserProfileDTO();
+    static toModel(data: UserProfileDTO): UsuarioModel {
+        const dto = new UsuarioModel();
         dto.username = data.username;
-        dto.nombres = data.nombres.primitiveValue;
-        dto.apellido_paterno = data.apellido_paterno.primitiveValue;
-        dto.apellido_materno = data.apellido_materno.primitiveValue;
+        dto.nombres = new NombrePersona(data.nombres);
+        dto.apellidoPaterno = new NombrePersona(data.apellido_paterno);
+        dto.apellidoMaterno = new NombrePersona(data.apellido_materno);
         dto.direccion = data.direccion;
         dto.celular = data.celular;
-        dto.correo = data.correo;
-        dto.fecha_nacimiento = data.fecha_nacimiento;
-        dto.redes_sociales = data.redes_sociales;
-        dto.tipo_documento = data.tipo_documento;
-        dto.numero_documento = data.numero_documento;
+        dto.correo = new Correo(data.correo);
+        dto.fechaNacimiento = data.fecha_nacimiento;
+        dto.redesSociales = data.redes_sociales;
+        dto.documentoContacto = DocumentoContacto.create(data.tipo_documento, data.numero_documento);
         dto.avatar = data.avatar;
-        dto.tipo_contacto = data.tipo_contacto;
+        dto.tipoContacto = data.tipo_contacto;
         return dto;
     }
+
+    static fromModel(model: UsuarioModel): UserProfileDTO {
+        const dto = new UserProfileDTO();
+        dto.username = model.username;
+        dto.nombres = model.nombres.getValue();
+        dto.apellido_paterno = model.apellidoPaterno.getValue();
+        dto.apellido_materno = model.apellidoMaterno.getValue();
+        dto.direccion = model.direccion;
+        dto.celular = model.celular;
+        dto.correo = model.correo.getValue();
+        dto.fecha_nacimiento = model.fechaNacimiento;
+        dto.redes_sociales = model.redesSociales;
+        dto.tipo_documento = model.documentoContacto.tipoDocumento.getValue();
+        dto.numero_documento = model.documentoContacto.numeroDocumento.getValue();
+        dto.avatar = model.avatar;
+        dto.tipo_contacto = model.tipoContacto;
+        return dto;
+    }
+
 }
