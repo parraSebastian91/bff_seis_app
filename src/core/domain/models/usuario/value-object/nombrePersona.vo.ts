@@ -6,6 +6,6 @@ export class NombrePersona extends ValueObject<string> {
     }
 
     protected validate(value: string): boolean {
-        return value.length > 2 && value.length < 80;
+        return value.length < 80;
     }
 }

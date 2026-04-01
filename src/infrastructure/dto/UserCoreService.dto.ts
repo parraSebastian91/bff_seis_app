@@ -25,7 +25,7 @@ export class UserProfileDTO {
         dto.username = data.username;
         dto.nombres = new NombrePersona(data.nombres);
         dto.apellidoPaterno = new NombrePersona(data.apellido_paterno);
-        dto.apellidoMaterno = new NombrePersona(data.apellido_materno);
+        dto.apellidoMaterno = new NombrePersona(data.apellido_materno || '');
         dto.direccion = data.direccion;
         dto.celular = data.celular;
         dto.correo = new Correo(data.correo);
