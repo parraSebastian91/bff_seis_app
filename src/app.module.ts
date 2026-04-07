@@ -5,7 +5,7 @@ import configurations from './../configs/app.config';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { CoreModule } from './core/core.module';
 import { CacheRepositoryAdapter } from './infrastructure/adapters/outbound/cache/cacheRepository.adapter';
-import { CoreServiceClientAdapter } from './infrastructure/adapters/services/coreServiceClient.adapter';
+import { CoreServiceClientAdapter } from './infrastructure/adapters/outbound/services/coreServiceClient.adapter';
 
 @Module({
   imports: [

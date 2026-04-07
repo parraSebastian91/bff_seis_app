@@ -11,7 +11,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { AxiosHeaders } from 'axios';
 import { CacheRepositoryAdapter } from './adapters/outbound/cache/cacheRepository.adapter';
-import { CoreServiceClientAdapter } from './adapters/services/coreServiceClient.adapter';
+import { CoreServiceClientAdapter } from './adapters/outbound/services/coreServiceClient.adapter';
 import { PAYMENTS_CLIENT, CORE_SERVICE_CLIENT } from './../core/domain/ports/outbound/core.service.interface';
 import { AccessTokenContext } from './http/middleware/access-token.context';
 

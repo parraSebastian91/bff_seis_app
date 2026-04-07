@@ -1,4 +1,4 @@
-import { SystemNavigationModel } from "./../../core/domain/models/usuario/value-object/SystemNavigation.model";
+import { SystemNavigationModel } from "../../../core/domain/models/usuario/value-object/SystemNavigation.model";
 
 class Sistema {
     nombre: string;

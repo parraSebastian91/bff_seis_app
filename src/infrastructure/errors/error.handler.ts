@@ -16,8 +16,7 @@ export class ErrorHandler implements ExceptionFilter {
             Logger.warn(`UnauthorizedException: ${exception.message}`);
             status = HttpStatus.UNAUTHORIZED;
             message = exception.message;
-        }
-        if(exception instanceof TokenExpiredError) {
+        }else if(exception instanceof TokenExpiredError) {
             Logger.warn(`TokenExpiredError: ${exception.message}`);
             status = HttpStatus.UNAUTHORIZED;
             message = "Token expired";
