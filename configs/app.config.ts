@@ -16,6 +16,13 @@ export default () => ({
     db: parseInt(process.env.REDIS_DB ?? '0', 10) || 0,
     ttl: parseInt(process.env.REDIS_TTL ?? '3600', 10) || 3600, // 1 hora por defecto
   },
+  rabbitmq: {
+    host: process.env.RABBITMQ_HOST || 'rabbitmq',
+    port: parseInt(process.env.RABBITMQ_PORT ?? '5672', 10) || 5672,
+    user: process.env.RABBITMQ_USER || 'guest',
+    pass: process.env.RABBITMQ_PASS || 'guest',
+    queue: process.env.RABBITMQ_QUEUE || 'object_queue',
+  },
   vault: {
     addr: process.env.VAULT_ADDR || 'http://vault:8200',
     token: process.env.VAULT_TOKEN || 'myroot',

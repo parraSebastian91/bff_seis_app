@@ -7,12 +7,14 @@ import { ICacheRepository } from './domain/ports/outbound/CacheRepository.interf
 import { ApplicationModule } from './application/application.module';
 import { DomainModule } from './domain/domain.module';
 import { ICoreService } from './domain/ports/outbound/core.service.interface';
+import { IMessagePublisher } from './domain/ports/outbound/message.publisher.interface';
 
 export type CoreModuleOptions = {
     modules: any[];
     adapters: {
         cacheRepositoryAdapter: Type<ICacheRepository>,
-        coreServiceClientAdapter: Type<ICoreService>
+        coreServiceClientAdapter: Type<ICoreService>,
+        queueClientAdapter: Type<IMessagePublisher>,
     }
 }
 
@@ -24,7 +26,8 @@ export class CoreModule {
         const { adapters, modules } = options;
         const {
             cacheRepositoryAdapter,
-            coreServiceClientAdapter
+            coreServiceClientAdapter,
+            queueClientAdapter,
         } = adapters;
 
         return {
@@ -35,7 +38,8 @@ export class CoreModule {
                     modules,
                     adapters: {
                         cacheRepositoryAdapter: cacheRepositoryAdapter,
-                        coreServiceClientAdapter: coreServiceClientAdapter
+                        coreServiceClientAdapter: coreServiceClientAdapter,
+                        queueClientAdapter: queueClientAdapter,
                     },
                 }),
             ],

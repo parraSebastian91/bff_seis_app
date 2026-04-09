@@ -71,7 +71,7 @@ export class UserProfileDTO {
     telefono: string;
     ubicacion: string;
 
-
+    
 
     static builder(model: UserProfileModel): UserProfileDTO {
 

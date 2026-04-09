@@ -6,6 +6,7 @@ import { Logger, Module } from '@nestjs/common';
 import { SecretsModule } from './secrets/secrets.module';
 import { HttpModule } from './http/http.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import KeyvRedis from '@keyv/redis';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import axios from 'axios';
@@ -14,6 +15,9 @@ import { CacheRepositoryAdapter } from './adapters/outbound/cache/cacheRepositor
 import { CoreServiceClientAdapter } from './adapters/outbound/services/coreServiceClient.adapter';
 import { PAYMENTS_CLIENT, CORE_SERVICE_CLIENT } from './../core/domain/ports/outbound/core.service.interface';
 import { AccessTokenContext } from './http/middleware/access-token.context';
+import { QueueClientAdapter } from './adapters/outbound/queue/queue-client.adapter';
+import { MESSAGE_PUBLISHER } from 'src/core/domain/ports/outbound/message.publisher.interface';
+import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-repository.adapter';
 
 
 
@@ -37,11 +41,42 @@ import { AccessTokenContext } from './http/middleware/access-token.context';
         }),
         SecretsModule,
         HttpModule,
+        ClientsModule.registerAsync([
+            {
+                name: 'OBJECT_SERVICE',
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (configService: ConfigService) => {
+                    const host = configService.get<string>('rabbitmq.host') || 'rabbitmq';
+                    const port = configService.get<number>('rabbitmq.port') || 5672;
+                    const user = configService.get<string>('rabbitmq.user') || 'guest';
+                    const pass = configService.get<string>('rabbitmq.pass') || 'guest';
+                    const queue = configService.get<string>('rabbitmq.queue') || 'object_queue';
+
+                    return {
+                        transport: Transport.RMQ,
+                        options: {
+                            urls: [`amqp://${user}:${pass}@${host}:${port}`],
+                            queue,
+                            queueOptions: {
+                                durable: true,
+                            },
+                        },
+                    };
+                },
+            },
+        ]),
     ],
     controllers: [],
     providers: [
         CacheRepositoryAdapter,
         CoreServiceClientAdapter,
+        QueueClientAdapter,
+        MinioRepositoryAdapter,
+        {
+            provide: MESSAGE_PUBLISHER,
+            useExisting: QueueClientAdapter,
+        },
         {
             provide: CORE_SERVICE_CLIENT,
             inject: [ConfigService, AccessTokenContext],
@@ -96,6 +131,8 @@ import { AccessTokenContext } from './http/middleware/access-token.context';
         CacheModule,
         CacheRepositoryAdapter,
         CoreServiceClientAdapter,
+        QueueClientAdapter,
+        MESSAGE_PUBLISHER,
         CORE_SERVICE_CLIENT,
         PAYMENTS_CLIENT,
     ],

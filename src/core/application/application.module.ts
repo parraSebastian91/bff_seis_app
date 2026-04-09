@@ -10,12 +10,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsuarioUserCaseImplService } from './useCase/usuario/usuario.usercase.impl.service';
 import { ICoreService } from '../domain/ports/outbound/core.service.interface';
 import { PortalUseCaseService } from './useCase/portal/portal-use-case.service';
+import { ObjectManagerService } from './useCase/objectManager/object-manager.usecase.impl.service';
+import { IMessagePublisher } from '../domain/ports/outbound/message.publisher.interface';
 
 export type ApplicationModuleOptions = {
     modules: any[];
     adapters: {
         cacheRepositoryAdapter: Type<ICacheRepository>;
         coreServiceClientAdapter: Type<ICoreService>;
+        queueClientAdapter: Type<IMessagePublisher>;
 
     }
 }
@@ -23,6 +26,7 @@ export type ApplicationModuleOptions = {
 export const AUTH_USE_CASE = 'AUTH_USE_CASE';
 export const USUARIO_USE_CASE = 'USUARIO_USE_CASE';
 export const PORTAL_USE_CASE = 'PORTAL_USE_CASE';
+export const OBJECT_MANAGER_USE_CASE = 'OBJECT_MANAGER_USE_CASE';
 
 @Module({})
 export class ApplicationModule {
@@ -32,7 +36,8 @@ export class ApplicationModule {
         const { adapters, modules } = options;
         const {
             cacheRepositoryAdapter,
-            coreServiceClientAdapter
+            coreServiceClientAdapter,
+            queueClientAdapter,
         } = adapters;
 
         const usuarioUseCaseProvider = {
@@ -80,6 +85,14 @@ export class ApplicationModule {
             },
         };
 
+        const ObjectManagerUseCaseProvider = {
+            provide: 'OBJECT_MANAGER_USE_CASE',
+            inject: [queueClientAdapter],
+            useFactory(messagePublisher: IMessagePublisher) {
+                return new ObjectManagerService(messagePublisher);
+            },
+        };
+
 
         return {
             module: ApplicationModule,
@@ -100,12 +113,14 @@ export class ApplicationModule {
             providers: [
                 usuarioUseCaseProvider,
                 authUseCaseProvider,
-                portalUseCaseProvider
+                portalUseCaseProvider,
+                ObjectManagerUseCaseProvider
             ],
             exports: [
                 AUTH_USE_CASE,
                 USUARIO_USE_CASE,
                 PORTAL_USE_CASE,
+                OBJECT_MANAGER_USE_CASE
             ],
         };
     }
