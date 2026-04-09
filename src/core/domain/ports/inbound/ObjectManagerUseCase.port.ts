@@ -1,12 +1,10 @@
+import { ObjectUploadPayload } from "./../../../../core/application/useCase/objectManager/command/uploadObject.command";
 
-export type ObjectUploadPayload = {
-    originalname?: string;
-    mimetype?: string;
-    size?: number;
-};
 
 export interface IObjectManagerUseCase {
 
     ExecuteCreateObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any>;
+    ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, fileName: string, fileType: string): Promise<string>;
+    ExecuteUploadObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any>;
     
 }

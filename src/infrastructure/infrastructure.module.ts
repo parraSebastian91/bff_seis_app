@@ -18,6 +18,8 @@ import { AccessTokenContext } from './http/middleware/access-token.context';
 import { QueueClientAdapter } from './adapters/outbound/queue/queue-client.adapter';
 import { MESSAGE_PUBLISHER } from 'src/core/domain/ports/outbound/message.publisher.interface';
 import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-repository.adapter';
+import { STORAGE_SERVICE } from 'src/core/domain/ports/outbound/storage.service.interface';
+import { StorageServiceAdapter } from './adapters/outbound/storage/storage.service';
 
 
 
@@ -73,6 +75,7 @@ import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-reposi
         CoreServiceClientAdapter,
         QueueClientAdapter,
         MinioRepositoryAdapter,
+        StorageServiceAdapter,
         {
             provide: MESSAGE_PUBLISHER,
             useExisting: QueueClientAdapter,
@@ -125,6 +128,44 @@ import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-reposi
                     timeout: configService.get<number>('externalServices.payments.timeout') ?? 8000,
                 }),
         },
+        {
+            provide: STORAGE_SERVICE,
+            inject: [ConfigService, AccessTokenContext],
+            useFactory: (configService: ConfigService, accessTokenContext: AccessTokenContext) => {
+                const baseUrl = configService.get<string>('externalServices.storage.baseUrl');
+                const logger = new Logger('InfrastructureModule');
+                logger.debug(`Configurando cliente Axios para servicio Storage con baseURL: ${baseUrl}`);
+                const client = axios.create({
+                    baseURL: baseUrl,
+                    timeout: configService.get<number>('externalServices.storage.timeout') ?? 8000,
+                });
+
+                client.interceptors.request.use((config) => {
+                    const token = accessTokenContext.getAccessToken();
+                    if (!token) {
+                        return config;
+                    }
+
+                    if (config.headers && typeof (config.headers as any).set === 'function') {
+                        (config.headers as any).set('access_token', token);
+                        if (!(config.headers as any).has?.('Authorization')) {
+                            (config.headers as any).set('Authorization', `Bearer ${token}`);
+                        }
+                        return config;
+                    }
+
+                    const headers = AxiosHeaders.from(config.headers ?? {});
+                    headers.set('access_token', token);
+                    if (!headers.has('Authorization')) {
+                        headers.set('Authorization', `Bearer ${token}`);
+                    }
+                    config.headers = headers;
+
+                    return config;
+                });
+                return client;
+            }
+        },
     ],
     exports: [
         SecretsModule,
@@ -132,9 +173,12 @@ import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-reposi
         CacheRepositoryAdapter,
         CoreServiceClientAdapter,
         QueueClientAdapter,
+        MinioRepositoryAdapter,
+        StorageServiceAdapter,
         MESSAGE_PUBLISHER,
         CORE_SERVICE_CLIENT,
         PAYMENTS_CLIENT,
+        STORAGE_SERVICE
     ],
 })
 export class InfrastructureModule { }

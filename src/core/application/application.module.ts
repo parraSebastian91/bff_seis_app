@@ -12,6 +12,8 @@ import { ICoreService } from '../domain/ports/outbound/core.service.interface';
 import { PortalUseCaseService } from './useCase/portal/portal-use-case.service';
 import { ObjectManagerService } from './useCase/objectManager/object-manager.usecase.impl.service';
 import { IMessagePublisher } from '../domain/ports/outbound/message.publisher.interface';
+import { IStorageRepository } from '../domain/ports/outbound/storage.repository';
+import { IStorageService } from '../domain/ports/outbound/storage.service.interface';
 
 export type ApplicationModuleOptions = {
     modules: any[];
@@ -19,7 +21,8 @@ export type ApplicationModuleOptions = {
         cacheRepositoryAdapter: Type<ICacheRepository>;
         coreServiceClientAdapter: Type<ICoreService>;
         queueClientAdapter: Type<IMessagePublisher>;
-
+        storageRepositoryAdapter: Type<IStorageRepository>;
+        storageServiceAdapter: Type<IStorageService>;
     }
 }
 
@@ -38,6 +41,8 @@ export class ApplicationModule {
             cacheRepositoryAdapter,
             coreServiceClientAdapter,
             queueClientAdapter,
+            storageRepositoryAdapter,
+            storageServiceAdapter,
         } = adapters;
 
         const usuarioUseCaseProvider = {
@@ -86,10 +91,14 @@ export class ApplicationModule {
         };
 
         const ObjectManagerUseCaseProvider = {
-            provide: 'OBJECT_MANAGER_USE_CASE',
-            inject: [queueClientAdapter],
-            useFactory(messagePublisher: IMessagePublisher) {
-                return new ObjectManagerService(messagePublisher);
+            provide: OBJECT_MANAGER_USE_CASE,
+            inject: [
+                queueClientAdapter,
+                storageRepositoryAdapter,
+                storageServiceAdapter,
+            ],
+            useFactory(messagePublisher: IMessagePublisher, storageRepository: IStorageRepository, storageService: IStorageService) {
+                return new ObjectManagerService(messagePublisher, storageRepository, storageService);
             },
         };
 

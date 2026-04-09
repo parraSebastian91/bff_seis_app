@@ -9,6 +9,7 @@ import type { File } from 'multer';
 import type { IObjectManagerUseCase } from 'src/core/domain/ports/inbound/ObjectManagerUseCase.port';
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
 import { ApiResponse } from '../model/api-response.model';
+import { Roles } from '../decorators/roles.decorator';
 
 @Controller("object")
 @UseFilters(ErrorHandler)
@@ -53,20 +54,25 @@ export class ObjectManagerController {
 
 
     @Get("presigned-url/:objectType")
-    async getObject(
+    @Roles("USR_STD")
+    async getPresignedPutUrl(
         @Req() req: Request,
         @Res() resp: Response
     ) {
         const userSession = req["user"];
         const { objectType } = req.params;
+        let { fileName, fileType } = req.query as { fileName: string, fileType: string };
+
+        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType);
+
         return resp.status(200).json(
             new ApiResponse(HttpStatus.OK, "Presigned URL obtenida exitosamente", {
-                url: "http://localhost:8000/api/bff/object"
+                url: rul
             })
         )
     }
 
-    @Put()
+    @Put(':objectType')
     async updateObject(
         @Req() req: Request,
         @Res() response: Response
@@ -79,9 +85,10 @@ export class ObjectManagerController {
             originalname: (req.headers['x-file-name'] as string) || 'upload.bin',
             mimetype: (req.headers['content-type'] as string) || 'application/octet-stream',
             size: rawFile.length,
+            buffer: rawFile,
         };
 
-        const createdObject = await this.objectManagerUseCase.ExecuteCreateObject(filePayload, "avatar", userSession["userUuid"]);
+        const createdObject = await this.objectManagerUseCase.ExecuteUploadObject(filePayload, objectType as string, userSession["userUuid"]);
 
         return response.status(201).json({
             message: "Objeto subido exitosamente",

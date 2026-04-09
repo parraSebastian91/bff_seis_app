@@ -23,6 +23,16 @@ export default () => ({
     pass: process.env.RABBITMQ_PASS || 'guest',
     queue: process.env.RABBITMQ_QUEUE || 'object_queue',
   },
+  minio: {
+    endpoint: process.env.MINIO_ENDPOINT || 'minio',
+    port: parseInt(process.env.MINIO_PORT ?? '9000', 10) || 9000,
+    useSSL: (process.env.MINIO_USE_SSL || 'false').toLowerCase() === 'true',
+    accessKey: process.env.MINIO_ROOT_USER || 'minioadmin',
+    secretKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin123',
+    bucket: process.env.MINIO_BUCKET || 'seis-app',
+    presignedExpirySeconds: parseInt(process.env.MINIO_PRESIGNED_EXPIRY_SECONDS ?? '900', 10) || 900,
+    publicEndpoint: process.env.MINIO_PUBLIC_ENDPOINT || '',
+  },
   vault: {
     addr: process.env.VAULT_ADDR || 'http://vault:8200',
     token: process.env.VAULT_TOKEN || 'myroot',
@@ -40,9 +50,13 @@ export default () => ({
       timeout: parseInt(process.env.CORE_SERVICE_TIMEOUT ?? '8000', 10),
     },
     payments: {
-      baseUrl: process.env.PAYMENTS_SERVICE_URL || 'http://localhost:3002',
+      baseUrl: process.env.PAYMENTS_SERVICE_URL || 'http://ms_payments_service:3002',
       timeout: parseInt(process.env.PAYMENTS_SERVICE_TIMEOUT ?? '8000', 10),
     },
+    storage: {
+      baseUrl: process.env.STORAGE_SERVICE_URL || 'http://ms-storage-service:3100',
+      timeout: parseInt(process.env.STORAGE_SERVICE_TIMEOUT ?? '8000', 10),
+    }
   }
 });
 

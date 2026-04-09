@@ -8,6 +8,8 @@ import { ApplicationModule } from './application/application.module';
 import { DomainModule } from './domain/domain.module';
 import { ICoreService } from './domain/ports/outbound/core.service.interface';
 import { IMessagePublisher } from './domain/ports/outbound/message.publisher.interface';
+import { IStorageRepository } from './domain/ports/outbound/storage.repository';
+import { IStorageService } from './domain/ports/outbound/storage.service.interface';
 
 export type CoreModuleOptions = {
     modules: any[];
@@ -15,6 +17,8 @@ export type CoreModuleOptions = {
         cacheRepositoryAdapter: Type<ICacheRepository>,
         coreServiceClientAdapter: Type<ICoreService>,
         queueClientAdapter: Type<IMessagePublisher>,
+        storageRepositoryAdapter: Type<IStorageRepository>,
+        storageServiceAdapter: Type<IStorageService>,
     }
 }
 
@@ -28,6 +32,8 @@ export class CoreModule {
             cacheRepositoryAdapter,
             coreServiceClientAdapter,
             queueClientAdapter,
+            storageRepositoryAdapter,
+            storageServiceAdapter,
         } = adapters;
 
         return {
@@ -40,6 +46,8 @@ export class CoreModule {
                         cacheRepositoryAdapter: cacheRepositoryAdapter,
                         coreServiceClientAdapter: coreServiceClientAdapter,
                         queueClientAdapter: queueClientAdapter,
+                        storageRepositoryAdapter: storageRepositoryAdapter,
+                        storageServiceAdapter: storageServiceAdapter,
                     },
                 }),
             ],
