@@ -36,8 +36,18 @@ export class UsuariosBffController {
         const usuario = await this.usuarioUseCase.ExecuteGetInformacionUsuario(userSession["userUuid"]);
 
         return response.status(200).json(new ApiResponse(HttpStatus.OK, "Informacion del usuario obtenida correctamente", UserProfileDTO.builder(usuario)));
-
     }
 
+    @Get("/profile/img")
+    async GetImagenUsuario(
+        @Req() request: Request,
+        @Res() response: Response
+    ) {
+
+        const userSession = request["user"];
+        const usuario = await this.usuarioUseCase.ExecuteGetInformacionUsuario(userSession["userUuid"]);
+
+        return response.status(200).json(new ApiResponse(HttpStatus.OK, "Imagen del usuario obtenida correctamente", UserProfileDTO.builder(usuario)));
+    }
 
 }

@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Inject } from "@nestjs/common";
+import { Inject, Logger } from "@nestjs/common";
 import type { Cache } from 'cache-manager';
 import { ConfigService } from '@nestjs/config';
 import KeyvRedis from '@keyv/redis';
@@ -8,6 +8,7 @@ import { AuthCodeStored } from "src/core/domain/models/authCode.model";
 
 export class CacheRepositoryAdapter implements ICacheRepository {
     private readonly redisStore: KeyvRedis<unknown>;
+    private readonly logger = new Logger(CacheRepositoryAdapter.name);
 
     key = {
         authCode: (code: string) => `auth_code:${code}`,
@@ -32,6 +33,8 @@ export class CacheRepositoryAdapter implements ICacheRepository {
     }
 
     async getAccessToken(sessionId: string): Promise<string | null> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Buscar access token en cache | sessionIdPresent=${Boolean(sessionId)}`);
 
         // await this.validateConexion();
         const decoded = decodeURIComponent(sessionId);
@@ -60,6 +63,7 @@ export class CacheRepositoryAdapter implements ICacheRepository {
             if (redisData) {
                 const token = this.extractTokenFromCacheValue(redisData);
                 if (token) {
+                    this.logger.log(`[OK] Access token encontrado en redisStore | durationMs=${Date.now() - startedAt}`);
                     return token;
                 }
             }
@@ -68,11 +72,13 @@ export class CacheRepositoryAdapter implements ICacheRepository {
             if (data) {
                 const token = this.extractTokenFromCacheValue(data);
                 if (token) {
+                    this.logger.log(`[OK] Access token encontrado en cacheManager | durationMs=${Date.now() - startedAt}`);
                     return token;
                 }
             }
         }
 
+        this.logger.warn(`[MISS] Access token no encontrado en cache | durationMs=${Date.now() - startedAt}`);
         return null;
     }
 
@@ -122,17 +128,17 @@ export class CacheRepositoryAdapter implements ICacheRepository {
 
     async validateConexion(): Promise<void> {
         try {
-            console.log('Validating cache connection...');
+            this.logger.log('[START] Validando conexion cache');
             await this.cacheManager.set('cache_test_key', 'test', 5 * 1000);
             const value = await this.cacheManager.get<string>('cache_test_key');
             if (value !== 'test') {
-                console.error('Cache validation failed: value mismatch');
+                this.logger.error('Cache validation failed: value mismatch');
                 throw new Error('Cache validation failed: value mismatch');
             }
-            console.log('Cache connection validated successfully');
+            this.logger.log('[OK] Conexion cache validada correctamente');
             // await this.cacheManager.del('cache_test_key');
         } catch (error) {
-            console.error('Cache connection validation error:', error);
+            this.logger.error(`Cache connection validation error: ${error}`);
             throw new Error('Unable to connect to cache');
         }
     }

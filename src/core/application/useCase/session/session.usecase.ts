@@ -14,21 +14,23 @@ export class SessionUseCase implements ISessionUseCase {
     ) { }
 
     async executeValidateSession(query: validateQuery): Promise<{ userUuid: string, username: string, accessToken: string }> {
-        console.log('Validating session with ID:', query.sessionId);
+        const startedAt = Date.now();
+        this.logger.log(`[START] Validar sesion | sessionIdPresent=${Boolean(query.sessionId)}`);
+
         const session = await this.cacheRepository.getAccessToken(query.sessionId);
         if (!session) {
-            this.logger.error('No se encontró sesión en la solicitud');
+            this.logger.error(`[FAIL] Sesion no encontrada | durationMs=${Date.now() - startedAt}`);
             throw new UnauthorizedException('Por favor inicia sesión.');
         }
-        console.log('Session token retrieved from cache:', session);
+
         if (!this.jwtService.verify(session)) {
-            this.logger.error('JWT expirado o inválido');
+            this.logger.error(`[FAIL] JWT expirado o invalido | durationMs=${Date.now() - startedAt}`);
             throw new UnauthorizedException('Por favor inicia sesión.');
         }
 
         const payload = this.jwtService.decode<AccessTokenPayload>(session);
         if (!payload) {
-            this.logger.error('Session existe pero accessToken CORRUPTO');
+            this.logger.error(`[FAIL] Access token corrupto | durationMs=${Date.now() - startedAt}`);
             throw new UnauthorizedException('Por favor inicia sesión.');
         }
         // const ahora = Math.floor(Date.now() / 1000); // timestamp actual en segundos
@@ -40,6 +42,8 @@ export class SessionUseCase implements ISessionUseCase {
 
         // this.logger.log(`⏱️ Token - Logeado: ${tiempoLogeado}s | Expira en: ${tiempoRestante}s`);
         // this.logger.log(`✅ Usuario autenticado: ${request['user'].username} (ID: ${request['user'].userId})`);
+
+        this.logger.log(`[OK] Sesion validada | userUuid=${payload.userUuid} | durationMs=${Date.now() - startedAt}`);
 
         return {
             userUuid: payload.userUuid,

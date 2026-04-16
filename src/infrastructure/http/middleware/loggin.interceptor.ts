@@ -18,21 +18,22 @@ export class LoggerInterceptor implements NestInterceptor {
     const { method, url, ip } = request;
     const sessionID = (request as Request & { sessionID?: string }).sessionID;
     const userAgent = (request as any).get?.('user-agent') || (request as any).headers?.['user-agent'];
+    const correlationId = response.getHeader('X-Correlation-Id') || request.headers?.['x-correlation-id'];
     const startTime = Date.now();
 
-    this.logger.log(`[ENTRADA] ${method} ${url} | IP: ${ip} | User-Agent: ${userAgent} | SessionID: ${sessionID}`);
+    this.logger.log(`[ENTRADA] ${method} ${url} | IP: ${ip} | User-Agent: ${userAgent} | SessionID: ${sessionID} | CorrelationId: ${correlationId}`);
 
     return next.handle().pipe(
       tap(() => {
         const duration = Date.now() - startTime;
         const statusCode = (response as any).statusCode;
-        this.logger.log(`[SALIDA] ${method} ${url} | Status: ${statusCode} | Duración: ${duration}ms`);
+        this.logger.log(`[SALIDA] ${method} ${url} | Status: ${statusCode} | Duración: ${duration}ms | CorrelationId: ${correlationId}`);
       }),
       catchError((error) => {
         const duration = Date.now() - startTime;
         const statusCode = (response as any).statusCode || 500;
         const message = error?.message ?? error;
-        this.logger.error(`[ERROR] ${method} ${url} | Status: ${statusCode} | Duración: ${duration}ms | Error: ${message}`);
+        this.logger.error(`[ERROR] ${method} ${url} | Status: ${statusCode} | Duración: ${duration}ms | Error: ${message} | CorrelationId: ${correlationId}`);
         return throwError(() => error);
       })
     );

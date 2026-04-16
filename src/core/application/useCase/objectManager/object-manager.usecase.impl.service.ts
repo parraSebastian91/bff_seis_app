@@ -2,7 +2,7 @@
 https://docs.nestjs.com/providers#services
 */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IObjectManagerUseCase } from './../../../../core/domain/ports/inbound/ObjectManagerUseCase.port';
 import type { IMessagePublisher } from './../../../../core/domain/ports/outbound/message.publisher.interface';
 import type { IStorageRepository } from './../../../../core/domain/ports/outbound/storage.repository';
@@ -17,6 +17,7 @@ const PATH_TYPES = {
 
 @Injectable()
 export class ObjectManagerService implements IObjectManagerUseCase {
+    private readonly logger = new Logger(ObjectManagerService.name);
 
     constructor(
         private readonly messagePublisher: IMessagePublisher,
@@ -25,7 +26,11 @@ export class ObjectManagerService implements IObjectManagerUseCase {
     ) { }
 
     async ExecuteCreateObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Crear objeto | userUuid=${userUuid} | objectType=${objectType} | size=${file?.size ?? 0}`);
+
         const objectKey = await this.storageRepository.saveObject(file.buffer, objectType, userUuid);
+        this.logger.log(`[INFO] Objeto persistido en storage | objectKey=${objectKey}`);
 
         const eventPayload = {
             objectType,
@@ -39,6 +44,7 @@ export class ObjectManagerService implements IObjectManagerUseCase {
         };
 
         await this.messagePublisher.publish('object.created', eventPayload);
+        this.logger.log(`[OK] Evento object.created publicado | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
 
         return {
             status: 'published',
@@ -48,8 +54,19 @@ export class ObjectManagerService implements IObjectManagerUseCase {
     }
 
     async ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, name: string, fileType: string): Promise<string> {
+        const startedAt = Date.now();
         const fileName = name.split('.')[0].toLowerCase();
-        return await this.storageService.getPresignedPutUrl(userUuid, objectType, fileName, this.normalizeFormatFileType(fileType));
+        const normalizedFileType = this.normalizeFormatFileType(fileType);
+        this.logger.log(`[START] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${normalizedFileType}`);
+
+        try {
+            const url = await this.storageService.getPresignedPutUrl(userUuid, objectType, fileName, normalizedFileType);
+            this.logger.log(`[OK] Presigned URL obtenida | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
+            return url;
+        } catch (error: any) {
+            this.logger.error(`[FAIL] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
+            throw error;
+        }
     }
 
     normalizeFormatFileType(fileType: string): string {
@@ -62,10 +79,19 @@ export class ObjectManagerService implements IObjectManagerUseCase {
     }
 
     async ExecuteUploadObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any> {
-        const objectKey = await this.storageRepository.saveObject(file.buffer, objectType, userUuid);
-        return {
-            objectKey
-        };
+        const startedAt = Date.now();
+        this.logger.log(`[START] Subir objeto directo | userUuid=${userUuid} | objectType=${objectType} | size=${file?.size ?? 0}`);
+
+        try {
+            const objectKey = await this.storageRepository.saveObject(file.buffer, objectType, userUuid);
+            this.logger.log(`[OK] Objeto subido directo | userUuid=${userUuid} | objectType=${objectType} | objectKey=${objectKey} | durationMs=${Date.now() - startedAt}`);
+            return {
+                objectKey
+            };
+        } catch (error: any) {
+            this.logger.error(`[FAIL] Subir objeto directo | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
+            throw error;
+        }
     }
 
 }

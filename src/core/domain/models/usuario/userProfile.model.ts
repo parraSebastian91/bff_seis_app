@@ -16,3 +16,14 @@ export class UserProfileModel {
     avatar: string;
     tipo_contacto: string;
 }
+
+export class UserImagesModel {
+    avatar: Map<string, MediaAssets>;
+    banner: Map<string, MediaAssets>;
+}
+
+class MediaAssets {
+    name: string;
+    url: string;
+    size: string;
+}

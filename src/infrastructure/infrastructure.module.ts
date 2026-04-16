@@ -94,22 +94,33 @@ import { StorageServiceAdapter } from './adapters/outbound/storage/storage.servi
 
                 client.interceptors.request.use((config) => {
                     const token = accessTokenContext.getAccessToken();
-                    if (!token) {
+                    const correlationId = accessTokenContext.getCorrelationId();
+                    if (!token && !correlationId) {
                         return config;
                     }
 
                     if (config.headers && typeof (config.headers as any).set === 'function') {
-                        (config.headers as any).set('access_token', token);
-                        if (!(config.headers as any).has?.('Authorization')) {
-                            (config.headers as any).set('Authorization', `Bearer ${token}`);
+                        if (correlationId) {
+                            (config.headers as any).set('X-Correlation-Id', correlationId);
+                        }
+                        if (token) {
+                            (config.headers as any).set('access_token', token);
+                            if (!(config.headers as any).has?.('Authorization')) {
+                                (config.headers as any).set('Authorization', `Bearer ${token}`);
+                            }
                         }
                         return config;
                     }
 
                     const headers = AxiosHeaders.from(config.headers ?? {});
-                    headers.set('access_token', token);
-                    if (!headers.has('Authorization')) {
-                        headers.set('Authorization', `Bearer ${token}`);
+                    if (correlationId) {
+                        headers.set('X-Correlation-Id', correlationId);
+                    }
+                    if (token) {
+                        headers.set('access_token', token);
+                        if (!headers.has('Authorization')) {
+                            headers.set('Authorization', `Bearer ${token}`);
+                        }
                     }
                     config.headers = headers;
 
@@ -121,12 +132,33 @@ import { StorageServiceAdapter } from './adapters/outbound/storage/storage.servi
         },
         {
             provide: PAYMENTS_CLIENT,
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) =>
-                axios.create({
+            inject: [ConfigService, AccessTokenContext],
+            useFactory: (configService: ConfigService, accessTokenContext: AccessTokenContext) => {
+                const client = axios.create({
                     baseURL: configService.get<string>('externalServices.payments.baseUrl'),
                     timeout: configService.get<number>('externalServices.payments.timeout') ?? 8000,
-                }),
+                });
+
+                client.interceptors.request.use((config) => {
+                    const correlationId = accessTokenContext.getCorrelationId();
+                    if (!correlationId) {
+                        return config;
+                    }
+
+                    if (config.headers && typeof (config.headers as any).set === 'function') {
+                        (config.headers as any).set('X-Correlation-Id', correlationId);
+                        return config;
+                    }
+
+                    const headers = AxiosHeaders.from(config.headers ?? {});
+                    headers.set('X-Correlation-Id', correlationId);
+                    config.headers = headers;
+
+                    return config;
+                });
+
+                return client;
+            },
         },
         {
             provide: STORAGE_SERVICE,
@@ -142,22 +174,33 @@ import { StorageServiceAdapter } from './adapters/outbound/storage/storage.servi
 
                 client.interceptors.request.use((config) => {
                     const token = accessTokenContext.getAccessToken();
-                    if (!token) {
+                    const correlationId = accessTokenContext.getCorrelationId();
+                    if (!token && !correlationId) {
                         return config;
                     }
 
                     if (config.headers && typeof (config.headers as any).set === 'function') {
-                        (config.headers as any).set('access_token', token);
-                        if (!(config.headers as any).has?.('Authorization')) {
-                            (config.headers as any).set('Authorization', `Bearer ${token}`);
+                        if (correlationId) {
+                            (config.headers as any).set('X-Correlation-Id', correlationId);
+                        }
+                        if (token) {
+                            (config.headers as any).set('access_token', token);
+                            if (!(config.headers as any).has?.('Authorization')) {
+                                (config.headers as any).set('Authorization', `Bearer ${token}`);
+                            }
                         }
                         return config;
                     }
 
                     const headers = AxiosHeaders.from(config.headers ?? {});
-                    headers.set('access_token', token);
-                    if (!headers.has('Authorization')) {
-                        headers.set('Authorization', `Bearer ${token}`);
+                    if (correlationId) {
+                        headers.set('X-Correlation-Id', correlationId);
+                    }
+                    if (token) {
+                        headers.set('access_token', token);
+                        if (!headers.has('Authorization')) {
+                            headers.set('Authorization', `Bearer ${token}`);
+                        }
                     }
                     config.headers = headers;
 

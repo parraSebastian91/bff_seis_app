@@ -6,6 +6,8 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import type { Request } from 'express';
+import type { Response } from 'express';
+import { randomUUID } from 'node:crypto';
 import { AccessTokenContext } from './access-token.context';
 
 @Injectable()
@@ -14,10 +16,14 @@ export class AccessTokenInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
+    const response = context.switchToHttp().getResponse<Response>();
     const accessToken = this.extractAccessToken(request);
+    const correlationId = this.extractCorrelationId(request) ?? randomUUID();
+
+    response.setHeader('X-Correlation-Id', correlationId);
 
     return this.accessTokenContext
-      .runWithAccessToken(accessToken, () => next.handle())
+      .runWithContext({ accessToken, correlationId }, () => next.handle())
       .pipe(
         tap(() => void 0),
       );
@@ -38,6 +44,19 @@ export class AccessTokenInterceptor implements NestInterceptor {
     const [scheme, token] = authHeader.split(' ');
     if (scheme?.toLowerCase() === 'bearer' && token) {
       return token;
+    }
+
+    return undefined;
+  }
+
+  private extractCorrelationId(request: Request): string | undefined {
+    const correlationIdHeader = request.headers?.['x-correlation-id'];
+    const correlationId = Array.isArray(correlationIdHeader)
+      ? correlationIdHeader[0]
+      : correlationIdHeader;
+
+    if (typeof correlationId === 'string' && correlationId.trim().length > 0) {
+      return correlationId.trim();
     }
 
     return undefined;

@@ -31,7 +31,7 @@ export default () => ({
     secretKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin123',
     bucket: process.env.MINIO_BUCKET || 'seis-app',
     presignedExpirySeconds: parseInt(process.env.MINIO_PRESIGNED_EXPIRY_SECONDS ?? '900', 10) || 900,
-    publicEndpoint: process.env.MINIO_PUBLIC_ENDPOINT || '',
+    publicEndpoint: process.env.MINIO_PUBLIC_ENDPOINT || 'http://localhost:9000',
   },
   vault: {
     addr: process.env.VAULT_ADDR || 'http://vault:8200',
