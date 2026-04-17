@@ -9,13 +9,18 @@ import { isAxiosError } from 'axios';
 import { ICoreService, CORE_SERVICE_CLIENT } from '../../../../core/domain/ports/outbound/core.service.interface'
 import { SystemNavigationDTO } from 'src/infrastructure/http/dto/systemNavigation.dto';
 import { ApiResponse } from 'src/infrastructure/http/model/api-response.model';
-import { UserProfileDTO } from './dto/UserProfile.core-service.dto';
+import { UserProfileCoreDTO } from './dto/UserProfile.core-service.dto';
 import { UserImagesModel, UserProfileModel } from 'src/core/domain/models/usuario/userProfile.model';
+import { ProfileImageCoreQueryResponse } from './dto/ProfileImageCoreResponse.dto';
+import { ConfigService } from '@nestjs/config';
+import { ProfileImageError } from 'src/core/domain/errors/ProfileImage.error';
+import { UserProfileReqResDTO } from 'src/infrastructure/http/dto/userProfile.req.res.dto';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
     private readonly logger = new Logger(CoreServiceClientAdapter.name);
     constructor(
+        private configService: ConfigService,
         @Inject(CORE_SERVICE_CLIENT) private readonly coreClient: AxiosInstance,
     ) { }
 
@@ -24,9 +29,9 @@ export class CoreServiceClientAdapter implements ICoreService {
         this.logger.log(`[START] Core.GetUserProfile | userUuid=${uuid}`);
 
         try {
-            const { data } = await this.coreClient.get<ApiResponse<UserProfileDTO>>(`/usuario/profile/${uuid}`);
+            const { data } = await this.coreClient.get<ApiResponse<UserProfileCoreDTO>>(`/usuario/profile/${uuid}`);
             this.logger.log(`[OK] Core.GetUserProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-            return UserProfileDTO.toModel(data.data as UserProfileDTO);
+            return UserProfileCoreDTO.toModel(data.data as UserProfileCoreDTO);
         } catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
                 this.logger.warn(`[MISS] Core.GetUserProfile 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
@@ -61,13 +66,14 @@ export class CoreServiceClientAdapter implements ICoreService {
         const startedAt = Date.now();
         this.logger.log(`[START] Core.GetUserImage | userUuid=${uuid}`);
         try {
-            const { data } = await this.coreClient.get<ApiResponse<any>>(`/usuario/profile/image/${uuid}`);
+            const { data } = await this.coreClient.get<ApiResponse<ProfileImageCoreQueryResponse[]>>(`/usuario/profile/image/${uuid}`);
             this.logger.log(`[OK] Core.GetUserImage | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-            return data.data.avatar;
+            const urlBase = `${this.configService.get<string>("minio.publicEndpoint")}/${this.configService.get<string>("minio.bucket")}` as string;
+            return data.data ? ProfileImageCoreQueryResponse.toDomainModel(data.data, urlBase) : new UserImagesModel();
         } catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
                 this.logger.warn(`[MISS] Core.GetUserImage 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-                throw new NotFoundException(`Imagen de usuario ${uuid} no encontrada en Core`);
+                throw new ProfileImageError(`Imagen de usuario ${uuid} no encontrada en Core`);
             }
             this.logger.error(`Error consultando servicio Core para imagen de usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
             this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
@@ -75,4 +81,22 @@ export class CoreServiceClientAdapter implements ICoreService {
         }
     }
 
+    async UpdateUserProfile(uuid: string, body: UserProfileModel): Promise<UserProfileModel> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Core.UpdateUserProfile | userUuid=${uuid}`);
+        const bodyForCore = UserProfileReqResDTO.builder(body);
+        try {
+            const { data } = await this.coreClient.put<ApiResponse<UserProfileReqResDTO>>(`/usuario/profile/${uuid}`, bodyForCore);
+            this.logger.log(`[OK] Core.UpdateUserProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+            return UserProfileReqResDTO.toModel(data.data as UserProfileReqResDTO);
+        } catch (error: any) {
+            if (isAxiosError(error) && error.response?.status === 404) {
+                this.logger.warn(`[MISS] Core.UpdateUserProfile 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
+            }
+            this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
+            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
+            throw new InternalServerErrorException('Error consultando servicio Core');
+        }
+    }
 }

@@ -4,4 +4,6 @@ export interface IUsuarioUserCase {
     
     ExecuteGetInformacionUsuario(uuid: string): Promise<UserProfileModel>;
     ExecuteGetImagenUsuario(uuid: string): Promise<UserImagesModel>;
+    ExecuteUpdateInformacionUsuario(uuid: string, body: UserProfileModel): Promise<UserProfileModel>;
+
 }

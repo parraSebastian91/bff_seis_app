@@ -1,3 +1,4 @@
+
 import { UserProfileModel, UserImagesModel } from "../../models/usuario/userProfile.model";
 
 
@@ -9,5 +10,6 @@ export interface ICoreService {
     GetUserProfile(uuid: string): Promise<UserProfileModel>;
     GetPortalMenuByUsuario(uuid: string): Promise<UserProfileModel>;
     GetUserImage(uuid: string): Promise<UserImagesModel>;
+    UpdateUserProfile(uuid: string, body: UserProfileModel): Promise<UserProfileModel>;
 
 }

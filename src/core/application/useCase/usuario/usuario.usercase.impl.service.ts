@@ -5,7 +5,7 @@ https://docs.nestjs.com/providers#services
 import { Injectable, Logger } from '@nestjs/common';
 import { UserImagesModel, UserProfileModel } from '../../../domain/models/usuario/userProfile.model';
 import { IUsuarioUserCase } from './../../../../core/domain/ports/inbound/UsuarioUseCase.interface';
-import type { ICoreService } from './../../../../core/domain/ports/outbound/core.service.interface';
+import type { ICoreService } from './../../../../core/domain/ports/outbound/core.service.interface'
 
 @Injectable()
 export class UsuarioUserCaseImplService implements IUsuarioUserCase {
@@ -18,7 +18,6 @@ export class UsuarioUserCaseImplService implements IUsuarioUserCase {
     async ExecuteGetInformacionUsuario(uuid: string): Promise<UserProfileModel> {
         const startedAt = Date.now();
         this.logger.log(`[START] Obtener informacion usuario | userUuid=${uuid}`);
-
         try {
             const usuario = await this.UsuarioCoreService.GetUserProfile(uuid);
             if (!usuario) {
@@ -53,4 +52,24 @@ export class UsuarioUserCaseImplService implements IUsuarioUserCase {
             throw error;
         }
     }
+
+    async ExecuteUpdateInformacionUsuario(uuid: string, body: UserProfileModel): Promise<UserProfileModel> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Actualizar informacion usuario | userUuid=${uuid}`);
+        console.log("UsuarioUserCaseImplService.ExecuteUpdateInformacionUsuario | body:", body);
+        try {
+            const usuario = await this.UsuarioCoreService.UpdateUserProfile(uuid, body);
+            if (!usuario) {
+                this.logger.warn(`[MISS] Usuario no encontrado | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+                throw new Error(`Usuario con uuid ${uuid} no encontrado`);
+            }
+
+            this.logger.log(`[OK] Informacion usuario actualizada | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+            return usuario;
+        } catch (error: any) {
+            this.logger.error(`[FAIL] Actualizar informacion usuario | userUuid=${uuid} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
+            throw error;
+        }
+    }
+
 }

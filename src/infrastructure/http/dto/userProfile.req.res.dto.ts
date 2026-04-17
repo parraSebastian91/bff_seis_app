@@ -61,31 +61,57 @@ class RedesSociales {
 
 }
 
-export class UserProfileDTO {
+export class UserProfileReqResDTO {
     username: string;
     nombreCompleto: string;
     nombre: Nombre;
     datosContacto: DatosContacto;
     rrss: RedesSociales[];
-    avatar: string;
     telefono: string;
     ubicacion: string;
 
-    
+    constructor() { 
+        this.username = "";
+        this.nombreCompleto = "";
+        this.nombre = new Nombre(new UserProfileModel());
+        this.datosContacto = new DatosContacto(new UserProfileModel());
+        this.rrss = [];
+        this.telefono = "";
+        this.ubicacion = "";
+    }
 
-    static builder(model: UserProfileModel): UserProfileDTO {
 
-        const dto = new UserProfileDTO();
+    static builder(model: UserProfileModel): UserProfileReqResDTO {
+
+        const dto = new UserProfileReqResDTO();
 
         dto.username = model.username;
         dto.nombre = new Nombre(model);
         dto.nombreCompleto = dto.nombre.getNombreCompleto();
         dto.datosContacto = new DatosContacto(model);
         dto.rrss = RedesSociales.fromJsonBject(model);
-        dto.avatar = model.avatar
         dto.telefono = model.celular;
         dto.ubicacion = model.direccion
         return dto;
+    }
+
+    static toModel(dto: UserProfileReqResDTO): UserProfileModel {
+        const model = new UserProfileModel();
+        model.username = dto.username;
+        model.nombres = dto.nombre.nombres;
+        model.apellido_paterno = dto.nombre.apellidoPaterno;
+        model.apellido_materno = dto.nombre.apellidoMaterno;
+        model.tipo_contacto = dto.datosContacto.tipoContacto;
+        model.correo = dto.datosContacto.correo;
+        model.celular = dto.datosContacto.telefono;
+        model.direccion = dto.datosContacto.ubicacion;
+        model.tipo_documento = dto.datosContacto.documento.tipo;
+        model.numero_documento = dto.datosContacto.documento.numero;
+        // model.redes_sociales = dto.rrss.reduce((acc, rrss) => {
+        //     acc[rrss.tipo] = rrss.enlace;
+        //     return acc;
+        // }, {});
+        return model;
     }
 
 }

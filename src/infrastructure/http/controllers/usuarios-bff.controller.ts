@@ -2,13 +2,13 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { Controller, Get, HttpStatus, Inject, Req, Res, UseFilters } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Put, Req, Res, UseFilters } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
-import { Public } from '../decorators/public.decorator';
 import type { IUsuarioUserCase } from './../../../core/domain/ports/inbound/UsuarioUseCase.interface';
-import { UserProfileDTO } from '../dto/userProfile.response.dto';
+import { UserProfileReqResDTO } from '../dto/userProfile.req.res.dto';
 import { ApiResponse } from '../model/api-response.model';
+import { ImageProfileResponseDto } from '../dto/imageProfile.response.dto';
 
 @Controller("usuario")
 @UseFilters(ErrorHandler)
@@ -31,11 +31,23 @@ export class UsuariosBffController {
         @Req() request: Request,
         @Res() response: Response
     ) {
-
         const userSession = request["user"];
         const usuario = await this.usuarioUseCase.ExecuteGetInformacionUsuario(userSession["userUuid"]);
+        return response.status(200).json(new ApiResponse(HttpStatus.OK, "Informacion del usuario obtenida correctamente", UserProfileReqResDTO.builder(usuario)));
+    }
 
-        return response.status(200).json(new ApiResponse(HttpStatus.OK, "Informacion del usuario obtenida correctamente", UserProfileDTO.builder(usuario)));
+    @Put("/profile")
+    async UpdateInformacionUsuario(
+        @Body() body: UserProfileReqResDTO,
+        @Req() request: Request,
+        @Res() response: Response
+    ) {
+        const userSession = request["user"];
+
+        const userModel = UserProfileReqResDTO.toModel(body);
+        const usuario = await this.usuarioUseCase.ExecuteUpdateInformacionUsuario(userSession["userUuid"], userModel);
+
+        return response.status(200).json(new ApiResponse(HttpStatus.OK, "Informacion del usuario obtenida correctamente", UserProfileReqResDTO.builder(usuario)));
     }
 
     @Get("/profile/img")
@@ -45,9 +57,9 @@ export class UsuariosBffController {
     ) {
 
         const userSession = request["user"];
-        const usuario = await this.usuarioUseCase.ExecuteGetInformacionUsuario(userSession["userUuid"]);
+        const usuario = await this.usuarioUseCase.ExecuteGetImagenUsuario(userSession["userUuid"]);
 
-        return response.status(200).json(new ApiResponse(HttpStatus.OK, "Imagen del usuario obtenida correctamente", UserProfileDTO.builder(usuario)));
+        return response.status(200).json(new ApiResponse(HttpStatus.OK, "Imagen del usuario obtenida correctamente", ImageProfileResponseDto.builder(usuario)));
     }
 
 }

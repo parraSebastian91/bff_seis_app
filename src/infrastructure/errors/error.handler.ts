@@ -1,6 +1,7 @@
 import { Catch, ExceptionFilter, ArgumentsHost, Logger, HttpStatus, ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { TokenExpiredError } from "@nestjs/jwt";
 import { Request, Response } from "express";
+import { ProfileImageError } from "src/core/domain/errors/ProfileImage.error";
 
 @Catch()
 export class ErrorHandler implements ExceptionFilter {
@@ -12,14 +13,18 @@ export class ErrorHandler implements ExceptionFilter {
         let status = 500;
         let message = "Internal server error";
 
-        if(exception instanceof UnauthorizedException) {
+        if (exception instanceof UnauthorizedException) {
             Logger.warn(`UnauthorizedException: ${exception.message}`);
             status = HttpStatus.UNAUTHORIZED;
             message = exception.message;
-        }else if(exception instanceof TokenExpiredError) {
+        } else if (exception instanceof TokenExpiredError) {
             Logger.warn(`TokenExpiredError: ${exception.message}`);
             status = HttpStatus.UNAUTHORIZED;
             message = "Token expired";
+        } else if (exception instanceof ProfileImageError) {
+            Logger.warn(`ProfileImageError: ${exception.message}`);
+            status = HttpStatus.FORBIDDEN;
+            message = exception.message;
         }
         else {
             Logger.error(`Unexpected error: ${exception.message}`, exception.stack);

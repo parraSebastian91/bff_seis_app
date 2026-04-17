@@ -1,6 +1,6 @@
 import { UserProfileModel } from "src/core/domain/models/usuario/userProfile.model";
 
-export class UserProfileDTO {
+export class UserProfileCoreDTO {
     username: string;
     ingreso: Date;
     activo: boolean;
@@ -17,11 +17,11 @@ export class UserProfileDTO {
     avatar: string;
     tipo_contacto: string;
 
-    constructor(init?: Partial<UserProfileDTO>) {
+    constructor(init?: Partial<UserProfileCoreDTO>) {
         Object.assign(this, init);
     }
 
-    static toModel(data: UserProfileDTO): UserProfileModel {
+    static toModel(data: UserProfileCoreDTO): UserProfileModel {
         return Object.assign(new UserProfileModel(), data);
     }
 }
