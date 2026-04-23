@@ -7,7 +7,7 @@ import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundExcep
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { ICoreService, CORE_SERVICE_CLIENT } from '../../../../core/domain/ports/outbound/core.service.interface'
-import { SystemNavigationDTO } from 'src/infrastructure/http/dto/systemNavigation.dto';
+import { SystemNavigationDTO } from './../../../../infrastructure/http/dto/systemNavigation.dto';
 import { ApiResponse } from 'src/infrastructure/http/model/api-response.model';
 import { UserProfileCoreDTO } from './dto/UserProfile.core-service.dto';
 import { UserImagesModel, UserProfileModel } from 'src/core/domain/models/usuario/userProfile.model';
@@ -15,6 +15,9 @@ import { ProfileImageCoreQueryResponse } from './dto/ProfileImageCoreResponse.dt
 import { ConfigService } from '@nestjs/config';
 import { ProfileImageError } from 'src/core/domain/errors/ProfileImage.error';
 import { UserProfileReqResDTO } from 'src/infrastructure/http/dto/userProfile.req.res.dto';
+import { SystemNavigationModel } from 'src/core/domain/models/usuario/value-object/SystemNavigation.model';
+import { UserOrganizacionProfileModel } from 'src/core/domain/models/usuario/userOrganizacionProfile.model';
+import { UserOrganizacionProfileCoreDto } from './dto/userOrganizacionProfile.core.dto';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
@@ -43,14 +46,15 @@ export class CoreServiceClientAdapter implements ICoreService {
         }
     }
 
-    async GetPortalMenuByUsuario(uuid: string): Promise<any> {
+    async GetPortalMenuByUsuario(uuid: string): Promise<SystemNavigationModel> {
         const startedAt = Date.now();
         this.logger.log(`[START] Core.GetPortalMenuByUsuario | userUuid=${uuid}`);
 
         try {
             const { data } = await this.coreClient.get<ApiResponse<SystemNavigationDTO>>(`/usuario/profile/navigation/${uuid}`);
-            this.logger.log(`[OK] Core.GetPortalMenuByUsuario | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-            return SystemNavigationDTO.toModel(data.data as SystemNavigationDTO);
+            this.logger.log(`[OK] Core.GetPortalenuByUsuario | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+            console.log(data)
+            return SystemNavigationDTO.toModel(data.data as SystemNavigationModel);
         } catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
                 this.logger.warn(`[MISS] Core.GetPortalMenuByUsuario 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
@@ -92,6 +96,25 @@ export class CoreServiceClientAdapter implements ICoreService {
         } catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
                 this.logger.warn(`[MISS] Core.UpdateUserProfile 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
+            }
+            this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
+            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
+            throw new InternalServerErrorException('Error consultando servicio Core');
+        }
+    }
+
+    async GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel>{
+        const startedAt = Date.now();
+        this.logger.log(`[START] Core.GetUserOrganizacionProfile | userUuid=${uuid}`);
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<UserOrganizacionProfileCoreDto[]>>(`/usuario/profile/organization/${uuid}`);
+            this.logger.log(`[OK] Core.GetUserOrganizacionProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+            return UserOrganizacionProfileCoreDto.toModel(data.data as UserOrganizacionProfileCoreDto[]);
+        }
+        catch (error: any) {
+            if (isAxiosError(error) && error.response?.status === 404) {
+                this.logger.warn(`[MISS] Core.GetUserOrganizacionProfile 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
                 throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
             }
             this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);

@@ -6,6 +6,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UserImagesModel, UserProfileModel } from '../../../domain/models/usuario/userProfile.model';
 import { IUsuarioUserCase } from './../../../../core/domain/ports/inbound/UsuarioUseCase.interface';
 import type { ICoreService } from './../../../../core/domain/ports/outbound/core.service.interface'
+import { UserOrganizacionProfileModel } from 'src/core/domain/models/usuario/userOrganizacionProfile.model';
 
 @Injectable()
 export class UsuarioUserCaseImplService implements IUsuarioUserCase {
@@ -71,5 +72,22 @@ export class UsuarioUserCaseImplService implements IUsuarioUserCase {
             throw error;
         }
     }
+    
+    async ExecuteGetProfileOrganizacionUsuario(uuid: string): Promise<UserOrganizacionProfileModel> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Obtener organizacion usuario | userUuid=${uuid}`);
+        try {
+            const organizacion = await this.UsuarioCoreService.GetUserOrganizacionProfile(uuid);
+            if (!organizacion) {
+                this.logger.warn(`[MISS] Organizacion de usuario no encontrada | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+                throw new Error(`Organizacion de usuario con uuid ${uuid} no encontrada`);
+            }
 
+            this.logger.log(`[OK] Organizacion de usuario obtenida | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
+            return organizacion;
+        } catch (error: any) {
+            this.logger.error(`[FAIL] Obtener organizacion usuario | userUuid=${uuid} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
+            throw error;
+        }
+    }
 }

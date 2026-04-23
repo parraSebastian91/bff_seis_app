@@ -9,6 +9,7 @@ import type { IUsuarioUserCase } from './../../../core/domain/ports/inbound/Usua
 import { UserProfileReqResDTO } from '../dto/userProfile.req.res.dto';
 import { ApiResponse } from '../model/api-response.model';
 import { ImageProfileResponseDto } from '../dto/imageProfile.response.dto';
+import { UserOrganizacionProfileResponseDTO } from '../dto/userOrganizacionProfile.dto';
 
 @Controller("usuario")
 @UseFilters(ErrorHandler)
@@ -60,6 +61,18 @@ export class UsuariosBffController {
         const usuario = await this.usuarioUseCase.ExecuteGetImagenUsuario(userSession["userUuid"]);
 
         return response.status(200).json(new ApiResponse(HttpStatus.OK, "Imagen del usuario obtenida correctamente", ImageProfileResponseDto.builder(usuario)));
+    }
+
+    @Get("/profile/organizacion")
+    async GetOrganizacionUsuario(
+        @Req() request: Request,
+        @Res() response: Response
+    ) {
+
+        const userSession = request["user"];
+        const usuario = await this.usuarioUseCase.ExecuteGetProfileOrganizacionUsuario(userSession["userUuid"]);
+
+        return response.status(200).json(new ApiResponse(HttpStatus.OK, "Organizacion del usuario obtenida correctamente", UserOrganizacionProfileResponseDTO.fromModel(usuario)));
     }
 
 }
