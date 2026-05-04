@@ -11,7 +11,7 @@ import { IMessagePublisher } from './../../../../core/domain/ports/outbound/mess
 export class QueueClientAdapter implements IMessagePublisher, OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(QueueClientAdapter.name);
 
-	constructor(@Inject('OBJECT_SERVICE') private readonly client: ClientProxy) { }
+	constructor(@Inject('NOTIFICATION_SERVICE') private readonly client: ClientProxy) { }
 
 	async onModuleInit(): Promise<void> {
 		this.logger.log('[START] Conectando cliente de cola');

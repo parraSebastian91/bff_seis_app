@@ -20,8 +20,9 @@ import { MESSAGE_PUBLISHER } from 'src/core/domain/ports/outbound/message.publis
 import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-repository.adapter';
 import { STORAGE_SERVICE } from 'src/core/domain/ports/outbound/storage.service.interface';
 import { StorageServiceAdapter } from './adapters/outbound/storage/storage.service';
+import { NotificationListenerController } from './adapters/inbound/queue/notification-listener.controller';
 
-
+const NOTIFICATION_MODULE = 'NOTIFICATION_SERVICE';
 
 @Module({
     imports: [
@@ -45,15 +46,15 @@ import { StorageServiceAdapter } from './adapters/outbound/storage/storage.servi
         HttpModule,
         ClientsModule.registerAsync([
             {
-                name: 'OBJECT_SERVICE',
+                name: NOTIFICATION_MODULE,
                 imports: [ConfigModule],
                 inject: [ConfigService],
                 useFactory: (configService: ConfigService) => {
                     const host = configService.get<string>('rabbitmq.host') || 'rabbitmq';
                     const port = configService.get<number>('rabbitmq.port') || 5672;
-                    const user = configService.get<string>('rabbitmq.user') || 'guest';
-                    const pass = configService.get<string>('rabbitmq.pass') || 'guest';
-                    const queue = configService.get<string>('rabbitmq.queue') || 'object_queue';
+                    const user = configService.get<string>('rabbitmq.user') || 'bff_seis_app';
+                    const pass = configService.get<string>('rabbitmq.pass') || 'bff-123';
+                    const queue = configService.get<string>('rabbitmq.queue') || 'notify_queue';
 
                     return {
                         transport: Transport.RMQ,
@@ -69,7 +70,7 @@ import { StorageServiceAdapter } from './adapters/outbound/storage/storage.servi
             },
         ]),
     ],
-    controllers: [],
+    controllers: [NotificationListenerController],
     providers: [
         CacheRepositoryAdapter,
         CoreServiceClientAdapter,

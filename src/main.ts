@@ -5,6 +5,7 @@ import vault from 'node-vault';
 import { INestApplication, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
 const cookieParser = require('cookie-parser');
 
@@ -53,6 +54,26 @@ async function checkRedisOnStartup(app: INestApplication<any>) {
 async function bootstrap() {
   await preloadVaultToEnv();
   const app = await NestFactory.create(AppModule);
+
+  const rabbitmqHost = process.env.RABBITMQ_HOST || 'rabbitmq';
+  const rabbitmqPort = process.env.RABBITMQ_PORT || '5672';
+  const rabbitmqUser = process.env.RABBITMQ_USER || 'bff_seis_app';
+  const rabbitmqPass = process.env.RABBITMQ_PASS || 'bff-123';
+  const rabbitmqQueue = process.env.RABBITMQ_QUEUE || 'notify_queue';
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [`amqp://${rabbitmqUser}:${rabbitmqPass}@${rabbitmqHost}:${rabbitmqPort}`],
+      queue: rabbitmqQueue,
+      queueOptions: {
+        durable: true,
+      },
+      noAck: false,
+    },
+  });
+
+  await app.startAllMicroservices();
   await checkRedisOnStartup(app);
   app.use(cookieParser());
   const configuredOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN || '')

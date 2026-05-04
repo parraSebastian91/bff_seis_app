@@ -19,9 +19,9 @@ export default () => ({
   rabbitmq: {
     host: process.env.RABBITMQ_HOST || 'rabbitmq',
     port: parseInt(process.env.RABBITMQ_PORT ?? '5672', 10) || 5672,
-    user: process.env.RABBITMQ_USER || 'guest',
-    pass: process.env.RABBITMQ_PASS || 'guest',
-    queue: process.env.RABBITMQ_QUEUE || 'object_queue',
+    user: process.env.RABBITMQ_USER || 'bff_seis_app',
+    pass: process.env.RABBITMQ_PASS || 'bff-123',
+    queue: process.env.RABBITMQ_QUEUE || 'notify_queue',
   },
   minio: {
     endpoint: process.env.MINIO_ENDPOINT || 'minio',
