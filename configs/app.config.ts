@@ -29,7 +29,12 @@ export default () => ({
     useSSL: (process.env.MINIO_USE_SSL || 'false').toLowerCase() === 'true',
     accessKey: process.env.MINIO_ROOT_USER || 'minioadmin',
     secretKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin123',
-    bucket: process.env.MINIO_BUCKET || 'seis-app',
+    bucket: {
+      publicOriginal: process.env.STORAGE_BUCKET_PUBLIC_ORIGINAL || 'seis-app-public-original',
+      privateOriginal: process.env.STORAGE_BUCKET_PRIVATE_ORIGINAL || 'seis-app-private-original',
+      publicProcessed: process.env.STORAGE_BUCKET_PUBLIC_PROCESSED || 'seis-app-public-processed',
+      privateProcessed: process.env.STORAGE_BUCKET_PRIVATE_PROCESSED || 'seis-app-private-processed',
+    },
     presignedExpirySeconds: parseInt(process.env.MINIO_PRESIGNED_EXPIRY_SECONDS ?? '900', 10) || 900,
     publicEndpoint: process.env.MINIO_PUBLIC_ENDPOINT || 'http://localhost:9000',
   },

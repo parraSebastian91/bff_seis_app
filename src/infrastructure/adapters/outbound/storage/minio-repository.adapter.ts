@@ -31,12 +31,7 @@ export class MinioRepositoryAdapter implements IStorageRepository, OnModuleInit 
     }
 
     async onModuleInit(): Promise<void> {
-        const bucketExists = await this.client.bucketExists(this.bucket);
-
-        if (!bucketExists) {
-            await this.client.makeBucket(this.bucket, 'us-east-1');
-            this.logger.log(`Bucket created: ${this.bucket}`);
-        }
+      
     }
 
     private withPublicEndpoint(url: string): string {

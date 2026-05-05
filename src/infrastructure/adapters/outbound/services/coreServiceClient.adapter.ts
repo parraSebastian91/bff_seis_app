@@ -72,7 +72,7 @@ export class CoreServiceClientAdapter implements ICoreService {
         try {
             const { data } = await this.coreClient.get<ApiResponse<ProfileImageCoreQueryResponse[]>>(`/usuario/profile/image/${uuid}`);
             this.logger.log(`[OK] Core.GetUserImage | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-            const urlBase = `${this.configService.get<string>("minio.publicEndpoint")}/${this.configService.get<string>("minio.bucket")}` as string;
+            const urlBase = `${this.configService.get<string>("minio.publicEndpoint")}/${this.configService.get<string>("minio.bucket.publicProcessed")}` as string;
             return data.data ? ProfileImageCoreQueryResponse.toDomainModel(data.data, urlBase) : new UserImagesModel();
         } catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
