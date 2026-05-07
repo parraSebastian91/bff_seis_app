@@ -1,6 +1,7 @@
 import { Catch, ExceptionFilter, ArgumentsHost, Logger, HttpStatus, ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { TokenExpiredError } from "@nestjs/jwt";
 import { Request, Response } from "express";
+import { ParameterNotFoundError } from "src/core/domain/errors/ParameterNotFound.error";
 import { ProfileImageError } from "src/core/domain/errors/ProfileImage.error";
 
 @Catch()
@@ -24,6 +25,10 @@ export class ErrorHandler implements ExceptionFilter {
         } else if (exception instanceof ProfileImageError) {
             Logger.warn(`ProfileImageError: ${exception.message}`);
             status = HttpStatus.FORBIDDEN;
+            message = exception.message;
+        } else if (exception instanceof ParameterNotFoundError) {
+            Logger.warn(`ParameterNotFoundError: ${exception.message}`);
+            status = HttpStatus.BAD_REQUEST;
             message = exception.message;
         }
         else {

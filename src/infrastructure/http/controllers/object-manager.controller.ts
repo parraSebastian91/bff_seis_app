@@ -10,6 +10,8 @@ import type { IObjectManagerUseCase } from 'src/core/domain/ports/inbound/Object
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
 import { ApiResponse } from '../model/api-response.model';
 import { Roles } from '../decorators/roles.decorator';
+import { CATEGORY_PROCESS } from 'src/core/domain/models/constantes.model';
+import { ParameterNotFoundError } from 'src/core/domain/errors/ParameterNotFound.error';
 
 @Controller("object")
 @UseFilters(ErrorHandler)
@@ -61,9 +63,11 @@ export class ObjectManagerController {
     ) {
         const userSession = req["user"];
         const { objectType } = req.params;
-        let { fileName, fileType } = req.query as { fileName: string, fileType: string };
-
-        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType);
+        let { fileName, fileType, organization } = req.query as { fileName: string, fileType: string, organization?: string };
+        if (objectType === CATEGORY_PROCESS.DOCUMENT_DTE && !organization) {
+            throw new ParameterNotFoundError("El parámetro 'organization' es requerido para el tipo de objeto 'documents'");
+        }
+        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType, organization);
 
         return resp.status(200).json(
             new ApiResponse(HttpStatus.OK, "Presigned URL obtenida exitosamente", {

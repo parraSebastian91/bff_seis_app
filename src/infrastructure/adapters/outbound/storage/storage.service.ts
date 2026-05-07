@@ -15,12 +15,12 @@ export class StorageServiceAdapter implements IStorageService {
         @Inject(STORAGE_SERVICE) private readonly storageClient: AxiosInstance,
     ) { }
 
-    async getPresignedPutUrl(userUuid: string, objectType: string, fileName: string, fileType: string): Promise<string> {
+    async getPresignedPutUrl(userUuid: string, objectType: string, fileName: string, fileType: string, organization?: string): Promise<string> {
         const startedAt = Date.now();
-        this.logger.log(`[START] Storage.getPresignedPutUrl | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${fileType}`);
+        this.logger.log(`[START] Storage.getPresignedPutUrl | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${fileType} | organization=${organization}`);
 
         try {
-            const { data } = await this.storageClient.get<ApiResponse<any>>(`api/v1/url?UUID=${userUuid}&object_type=${objectType}&file_name=${fileName}&content_type=${fileType}`);
+            const { data } = await this.storageClient.get<ApiResponse<any>>(`api/v1/url?UUID=${userUuid}&object_type=${objectType}&file_name=${fileName}&content_type=${fileType}&organization=${organization}`);
             this.logger.log(`[OK] Storage.getPresignedPutUrl | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
             const url = data['url'];
             return url as string;
