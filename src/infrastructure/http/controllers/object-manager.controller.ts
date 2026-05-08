@@ -63,15 +63,19 @@ export class ObjectManagerController {
     ) {
         const userSession = req["user"];
         const { objectType } = req.params;
-        let { fileName, fileType, organization } = req.query as { fileName: string, fileType: string, organization?: string };
+        let { fileName, fileType, userName, organization } = req.query as { fileName: string, fileType: string, userName: string, organization?: string };
+        if (!userName || userName === "") {
+            throw new ParameterNotFoundError("El parámetro 'userName' es requerido");
+        }
         if (objectType === CATEGORY_PROCESS.DOCUMENT_DTE && !organization) {
             throw new ParameterNotFoundError("El parámetro 'organization' es requerido para el tipo de objeto 'documents'");
         }
-        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType, organization);
+        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType, userName, organization);
 
         return resp.status(200).json(
             new ApiResponse(HttpStatus.OK, "Presigned URL obtenida exitosamente", {
-                url: rul
+                url: rul,
+                following: req["correlationId"]
             })
         )
     }

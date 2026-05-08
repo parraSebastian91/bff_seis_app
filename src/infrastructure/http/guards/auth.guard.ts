@@ -29,6 +29,7 @@ export class AuthGuard implements CanActivate {
     }
 
     request["user"] = await this.authService.executeValidateSession(queryValidate)
+    request["correlationId"] = request.headers?.['x-correlation-id'];
 
     return !!request["user"];
   }

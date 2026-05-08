@@ -4,7 +4,7 @@ import { ObjectUploadPayload } from "./../../../../core/application/useCase/obje
 export interface IObjectManagerUseCase {
 
     ExecuteCreateObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any>;
-    ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, fileName: string, fileType: string, organization?: string): Promise<string>;
+    ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, fileName: string, fileType: string, userName: string, organization?: string): Promise<string>;
     ExecuteUploadObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any>;
     
 }

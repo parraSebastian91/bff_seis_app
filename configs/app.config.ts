@@ -22,6 +22,8 @@ export default () => ({
     user: process.env.RABBITMQ_USER || 'bff_seis_app',
     pass: process.env.RABBITMQ_PASS || 'bff-123',
     queue: process.env.RABBITMQ_QUEUE || 'notify_queue',
+    exchange: process.env.RABBITMQ_EXCHANGE || 'storage_notifications_exchange',
+    routingKey: process.env.RABBITMQ_ROUTING_KEY || 'dte.process.notification',
   },
   minio: {
     endpoint: process.env.MINIO_ENDPOINT || 'minio',

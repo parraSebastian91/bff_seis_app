@@ -53,14 +53,14 @@ export class ObjectManagerService implements IObjectManagerUseCase {
         };
     }
 
-    async ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, name: string, fileType: string, organization?: string): Promise<string> {
+    async ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, name: string, fileType: string, userName: string, organization?: string): Promise<string> {
         const startedAt = Date.now();
         const fileName = name.split('.')[0].toLowerCase();
         const normalizedFileType = this.normalizeFormatFileType(fileType);
-        this.logger.log(`[START] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${normalizedFileType} | organization=${organization}`);
+        this.logger.log(`[START] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${normalizedFileType} | userName=${userName} | organization=${organization}`);
 
         try {
-            const url = await this.storageService.getPresignedPutUrl(userUuid, objectType, fileName, normalizedFileType, organization);
+            const url = await this.storageService.getPresignedPutUrl(userUuid, objectType, fileName, normalizedFileType, userName, organization);
             this.logger.log(`[OK] Presigned URL obtenida | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
             return url;
         } catch (error: any) {

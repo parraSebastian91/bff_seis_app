@@ -1,6 +1,7 @@
 import { StorageServiceAdapter } from './infrastructure/adapters/outbound/storage/storage.service';
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import configurations from './../configs/app.config';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { CoreModule } from './core/core.module';
@@ -11,6 +12,7 @@ import { MinioRepositoryAdapter } from './infrastructure/adapters/outbound/stora
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       load: [configurations],
       isGlobal: true,

@@ -14,6 +14,8 @@ import { ObjectManagerService } from './useCase/objectManager/object-manager.use
 import { IMessagePublisher } from '../domain/ports/outbound/message.publisher.interface';
 import { IStorageRepository } from '../domain/ports/outbound/storage.repository';
 import { IStorageService } from '../domain/ports/outbound/storage.service.interface';
+import { NotificationUseCase } from './useCase/notification/notification.usecase.impl';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export type ApplicationModuleOptions = {
     modules: any[];
@@ -30,6 +32,8 @@ export const AUTH_USE_CASE = 'AUTH_USE_CASE';
 export const USUARIO_USE_CASE = 'USUARIO_USE_CASE';
 export const PORTAL_USE_CASE = 'PORTAL_USE_CASE';
 export const OBJECT_MANAGER_USE_CASE = 'OBJECT_MANAGER_USE_CASE';
+export const NOTIFICATION_USE_CASE = 'NOTIFICATION_USE_CASE';
+
 
 @Module({})
 export class ApplicationModule {
@@ -102,6 +106,14 @@ export class ApplicationModule {
             },
         };
 
+        const NotificationUseCaseProvider = {
+            provide: NOTIFICATION_USE_CASE,
+            inject: [EventEmitter2],
+            useFactory(eventEmitter: EventEmitter2) {
+                return new NotificationUseCase(eventEmitter);
+            }
+        }
+
 
         return {
             module: ApplicationModule,
@@ -123,13 +135,15 @@ export class ApplicationModule {
                 usuarioUseCaseProvider,
                 authUseCaseProvider,
                 portalUseCaseProvider,
-                ObjectManagerUseCaseProvider
+                ObjectManagerUseCaseProvider,
+                NotificationUseCaseProvider
             ],
             exports: [
                 AUTH_USE_CASE,
                 USUARIO_USE_CASE,
                 PORTAL_USE_CASE,
-                OBJECT_MANAGER_USE_CASE
+                OBJECT_MANAGER_USE_CASE,
+                NOTIFICATION_USE_CASE
             ],
         };
     }

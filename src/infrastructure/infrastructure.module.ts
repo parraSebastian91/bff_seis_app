@@ -21,6 +21,7 @@ import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-reposi
 import { STORAGE_SERVICE } from 'src/core/domain/ports/outbound/storage.service.interface';
 import { StorageServiceAdapter } from './adapters/outbound/storage/storage.service';
 import { NotificationListenerController } from './adapters/inbound/queue/notification-listener.controller';
+import { NotificationGatewayGateway } from './adapters/outbound/websocket/notificationgateway.gateway';
 
 const NOTIFICATION_MODULE = 'NOTIFICATION_SERVICE';
 
@@ -55,12 +56,17 @@ const NOTIFICATION_MODULE = 'NOTIFICATION_SERVICE';
                     const user = configService.get<string>('rabbitmq.user') || 'bff_seis_app';
                     const pass = configService.get<string>('rabbitmq.pass') || 'bff-123';
                     const queue = configService.get<string>('rabbitmq.queue') || 'notify_queue';
+                    const exchange = configService.get<string>('rabbitmq.exchange') || 'storage_notifications_exchange';
+                    const routingKey = configService.get<string>('rabbitmq.routingKey') || 'dte.process.notification';
 
                     return {
                         transport: Transport.RMQ,
                         options: {
                             urls: [`amqp://${user}:${pass}@${host}:${port}`],
                             queue,
+                            exchange,
+                            exchangeType: 'topic', // Usa 'topic' para soportar wildcards en routing keys
+                            routingKey,
                             queueOptions: {
                                 durable: true,
                             },
@@ -77,6 +83,7 @@ const NOTIFICATION_MODULE = 'NOTIFICATION_SERVICE';
         QueueClientAdapter,
         MinioRepositoryAdapter,
         StorageServiceAdapter,
+        NotificationGatewayGateway,
         {
             provide: MESSAGE_PUBLISHER,
             useExisting: QueueClientAdapter,
