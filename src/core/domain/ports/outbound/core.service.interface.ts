@@ -14,5 +14,6 @@ export interface ICoreService {
     GetUserImage(uuid: string): Promise<UserImagesModel>;
     UpdateUserProfile(uuid: string, body: UserProfileModel): Promise<UserProfileModel>;
     GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel>;
+    getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<any>;
 
 }

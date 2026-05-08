@@ -4,7 +4,7 @@ https://docs.nestjs.com/modules
 
 import { Logger, Module } from '@nestjs/common';
 import { SecretsModule } from './secrets/secrets.module';
-import { HttpModule } from './http/http.module';
+import { HttpModule } from './adapters/inbound/http/http.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import KeyvRedis from '@keyv/redis';
@@ -14,7 +14,7 @@ import { AxiosHeaders } from 'axios';
 import { CacheRepositoryAdapter } from './adapters/outbound/cache/cacheRepository.adapter';
 import { CoreServiceClientAdapter } from './adapters/outbound/services/coreServiceClient.adapter';
 import { PAYMENTS_CLIENT, CORE_SERVICE_CLIENT } from './../core/domain/ports/outbound/core.service.interface';
-import { AccessTokenContext } from './http/middleware/access-token.context';
+import { AccessTokenContext } from './adapters/inbound/http/middleware/access-token.context';
 import { QueueClientAdapter } from './adapters/outbound/queue/queue-client.adapter';
 import { MESSAGE_PUBLISHER } from 'src/core/domain/ports/outbound/message.publisher.interface';
 import { MinioRepositoryAdapter } from './adapters/outbound/storage/minio-repository.adapter';

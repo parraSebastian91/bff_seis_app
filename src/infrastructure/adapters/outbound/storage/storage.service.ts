@@ -6,7 +6,7 @@ import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundExcep
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios'
 import { IStorageService, STORAGE_SERVICE } from 'src/core/domain/ports/outbound/storage.service.interface';
-import { ApiResponse } from 'src/infrastructure/http/model/api-response.model';
+import { ApiResponse } from 'src/infrastructure/adapters/inbound/http/model/api-response.model';
 
 @Injectable()
 export class StorageServiceAdapter implements IStorageService {

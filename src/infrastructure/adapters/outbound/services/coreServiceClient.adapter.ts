@@ -7,17 +7,19 @@ import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundExcep
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { ICoreService, CORE_SERVICE_CLIENT } from '../../../../core/domain/ports/outbound/core.service.interface'
-import { SystemNavigationDTO } from './../../../../infrastructure/http/dto/systemNavigation.dto';
-import { ApiResponse } from 'src/infrastructure/http/model/api-response.model';
+import { SystemNavigationDTO } from '../../inbound/http/dto/systemNavigation.dto';
+import { ApiResponse } from 'src/infrastructure/adapters/inbound/http/model/api-response.model';
 import { UserProfileCoreDTO } from './dto/UserProfile.core-service.dto';
 import { UserImagesModel, UserProfileModel } from 'src/core/domain/models/usuario/userProfile.model';
 import { ProfileImageCoreQueryResponse } from './dto/ProfileImageCoreResponse.dto';
 import { ConfigService } from '@nestjs/config';
 import { ProfileImageError } from 'src/core/domain/errors/ProfileImage.error';
-import { UserProfileReqResDTO } from 'src/infrastructure/http/dto/userProfile.req.res.dto';
+import { UserProfileReqResDTO } from 'src/infrastructure/adapters/inbound/http/dto/userProfile.req.res.dto';
 import { SystemNavigationModel } from 'src/core/domain/models/usuario/value-object/SystemNavigation.model';
 import { UserOrganizacionProfileModel } from 'src/core/domain/models/usuario/userOrganizacionProfile.model';
 import { UserOrganizacionProfileCoreDto } from './dto/userOrganizacionProfile.core.dto';
+import { FacturaCoreResponse } from './dto/factura.coreResponse';
+import { FacturaModel } from 'src/core/domain/models/factura.model';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
@@ -104,7 +106,7 @@ export class CoreServiceClientAdapter implements ICoreService {
         }
     }
 
-    async GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel>{
+    async GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel> {
         const startedAt = Date.now();
         this.logger.log(`[START] Core.GetUserOrganizacionProfile | userUuid=${uuid}`);
         try {
@@ -118,6 +120,25 @@ export class CoreServiceClientAdapter implements ICoreService {
                 throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
             }
             this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
+            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
+            throw new InternalServerErrorException('Error consultando servicio Core');
+        }
+    }
+
+    async getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<FacturaModel[]> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Core.getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID}`);
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<FacturaCoreResponse[]>>(`/factura/list/${uuid}/${organizacionUUID}`);
+            this.logger.log(`[OK] Core.getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID} | durationMs=${Date.now() - startedAt}`);
+            return FacturaCoreResponse.toModel(data.data as FacturaCoreResponse[]);
+        }
+        catch (error: any) {
+            if (isAxiosError(error) && error.response?.status === 404) {
+                this.logger.warn(`[MISS] Core.getFacturasByUserUUID 404 | userUuid=${uuid} | organizacionUUID=${organizacionUUID} | durationMs=${Date.now() - startedAt}`);
+                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
+            }
+            this.logger.error(`Error consultando servicio Core para usuario ${uuid} | organizacionUUID=${organizacionUUID}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
             this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
             throw new InternalServerErrorException('Error consultando servicio Core');
         }
