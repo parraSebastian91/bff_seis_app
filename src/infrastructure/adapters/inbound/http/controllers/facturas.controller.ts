@@ -12,7 +12,7 @@ import type { Response, Request } from 'express';
 @UseFilters(ErrorHandler)
 export class FacturasController {
 
-    constructor(@Inject('IFacturaUseCase') private readonly facturaUseCase: IFacturaUseCase) { }
+    constructor(@Inject('FACTURA_USE_CASE') private readonly facturaUseCase: IFacturaUseCase) { }
 
     @Get("list/:organizacionUUID")
     @Roles("USR_STD")

@@ -33,6 +33,7 @@ export const USUARIO_USE_CASE = 'USUARIO_USE_CASE';
 export const PORTAL_USE_CASE = 'PORTAL_USE_CASE';
 export const OBJECT_MANAGER_USE_CASE = 'OBJECT_MANAGER_USE_CASE';
 export const NOTIFICATION_USE_CASE = 'NOTIFICATION_USE_CASE';
+export const FACTURA_USE_CASE = 'FACTURA_USE_CASE';
 
 
 @Module({})
@@ -114,6 +115,16 @@ export class ApplicationModule {
             }
         }
 
+        const FacturasUseCaseProvider = {
+            provide: FACTURA_USE_CASE,
+            inject: [coreServiceClientAdapter],
+            useFactory(coreServiceClient: ICoreService) {
+                return {
+                    ExecuteGetFacturas: (userUUID: string, organizacionUUID: string) => coreServiceClient.getFacturasByUserUUID(userUUID, organizacionUUID)
+                }
+            }
+        }
+
 
         return {
             module: ApplicationModule,
@@ -136,14 +147,17 @@ export class ApplicationModule {
                 authUseCaseProvider,
                 portalUseCaseProvider,
                 ObjectManagerUseCaseProvider,
-                NotificationUseCaseProvider
+                NotificationUseCaseProvider,
+                FacturasUseCaseProvider
+
             ],
             exports: [
                 AUTH_USE_CASE,
                 USUARIO_USE_CASE,
                 PORTAL_USE_CASE,
                 OBJECT_MANAGER_USE_CASE,
-                NOTIFICATION_USE_CASE
+                NOTIFICATION_USE_CASE,
+                FACTURA_USE_CASE
             ],
         };
     }
