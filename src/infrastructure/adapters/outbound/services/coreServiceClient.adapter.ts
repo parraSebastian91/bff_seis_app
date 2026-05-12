@@ -55,7 +55,6 @@ export class CoreServiceClientAdapter implements ICoreService {
         try {
             const { data } = await this.coreClient.get<ApiResponse<SystemNavigationDTO>>(`/usuario/profile/navigation/${uuid}`);
             this.logger.log(`[OK] Core.GetPortalenuByUsuario | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-            console.log(data)
             return SystemNavigationDTO.toModel(data.data as SystemNavigationModel);
         } catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
@@ -131,7 +130,7 @@ export class CoreServiceClientAdapter implements ICoreService {
         try {
             const { data } = await this.coreClient.get<ApiResponse<FacturaCoreResponse[]>>(`/factura/list/${uuid}/${organizacionUUID}`);
             this.logger.log(`[OK] Core.getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID} | durationMs=${Date.now() - startedAt}`);
-            return FacturaCoreResponse.toModel(data.data as FacturaCoreResponse[]);
+            return (data.data as FacturaCoreResponse[]).map(FacturaCoreResponse.toModel);
         }
         catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {

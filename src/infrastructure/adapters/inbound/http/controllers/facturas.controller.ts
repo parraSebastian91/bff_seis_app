@@ -2,11 +2,12 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { Controller, Get, Inject, Param, Req, Res, UseFilters } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Param, Req, Res, UseFilters } from '@nestjs/common';
 import { Roles } from '../decorators/roles.decorator';
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
 import type { IFacturaUseCase } from 'src/core/domain/ports/inbound/facturaUseCase.port';
 import type { Response, Request } from 'express';
+import { ApiResponse } from '../model/api-response.model';
 
 @Controller('facturas')
 @UseFilters(ErrorHandler)
@@ -22,8 +23,8 @@ export class FacturasController {
         @Res() res: Response
     ): Promise<any> {
         const userSession = req["user"];
-        const facturas = await this.facturaUseCase.ExecuteGetFacturas(userSession.uuid, organizacionUUID);
-        return res.status(200).json(facturas);
+        const facturas = await this.facturaUseCase.ExecuteGetFacturas(userSession["userUuid"], organizacionUUID);
+        return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, "Extracción exitosa", facturas));
     }
 
 

@@ -77,7 +77,6 @@ export class ImageProfileResponseDto {
 
     static builder(userImagesModel: UserImagesModel): ImageProfileResponseDto {
         const responseDto = new ImageProfileResponseDto();
-        console.log("Building ImageProfileResponseDto from UserImagesModel:", userImagesModel);
         userImagesModel.avatar.forEach((metadata, size) => {
             responseDto.addImage(USER_AVATAR_CATEGORY, size, new MediaAssets(metadata.width, metadata.format, metadata.height, metadata.headers, metadata.path));
         });
