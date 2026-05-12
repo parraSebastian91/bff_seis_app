@@ -16,6 +16,7 @@ import { IStorageRepository } from '../domain/ports/outbound/storage.repository'
 import { IStorageService } from '../domain/ports/outbound/storage.service.interface';
 import { NotificationUseCase } from './useCase/notification/notification.usecase.impl';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FacturaUseCaseImpl } from './useCase/factura/facturaUseCase.impl';
 
 export type ApplicationModuleOptions = {
     modules: any[];
@@ -117,11 +118,9 @@ export class ApplicationModule {
 
         const FacturasUseCaseProvider = {
             provide: FACTURA_USE_CASE,
-            inject: [coreServiceClientAdapter],
-            useFactory(coreServiceClient: ICoreService) {
-                return {
-                    ExecuteGetFacturas: (userUUID: string, organizacionUUID: string) => coreServiceClient.getFacturasByUserUUID(userUUID, organizacionUUID)
-                }
+            inject: [coreServiceClientAdapter, storageServiceAdapter],
+            useFactory(coreServiceClient: ICoreService, storageServiceAdapter: IStorageService) {
+                return new FacturaUseCaseImpl(coreServiceClient, storageServiceAdapter);
             }
         }
 

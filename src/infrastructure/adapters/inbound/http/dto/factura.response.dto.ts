@@ -11,7 +11,7 @@ export class FacturaResponseDTO {
     ofertas_count: number;
     fecha_publicacion: Date;
     fecha_vencimiento: Date;
-
+    url_factura: string;
     constructor() {
         this.id = "";
         this.assetURL = "";
@@ -23,6 +23,7 @@ export class FacturaResponseDTO {
         this.ofertas_count = 0;
         this.fecha_publicacion = new Date();
         this.fecha_vencimiento = new Date();
+        this.url_factura = "";
     }
 }
 

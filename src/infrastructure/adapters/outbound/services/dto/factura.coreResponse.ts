@@ -15,6 +15,7 @@ export class FacturaCoreResponse {
     fechaVencimiento: Date;
     status: facturaEstado;
     correlationId: string;
+    storage_key: string;
 
     constructor(ownerUUID: string, gestor: string, status: facturaEstado, correlationId: string) {
         this.assetId = "";
@@ -29,6 +30,7 @@ export class FacturaCoreResponse {
         this.fechaVencimiento = new Date();
         this.status = status;
         this.correlationId = correlationId;
+        this.storage_key = "";
     }
 
     static toModel(data: FacturaCoreResponse): FacturaModel {
@@ -47,6 +49,7 @@ export class FacturaCoreResponse {
         factura.facturaNumero = data.facturaNumero;
         factura.montoTotal = data.montoTotal;
         factura.fechaVencimiento = new Date(data.fechaVencimiento);
+        factura.storage_key = data.storage_key;
         return factura;
     }
 

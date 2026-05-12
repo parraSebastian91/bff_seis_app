@@ -1,4 +1,5 @@
 
+import { FacturaModel } from "../../models/factura.model";
 import { UserOrganizacionProfileModel } from "../../models/usuario/userOrganizacionProfile.model";
 import { UserProfileModel, UserImagesModel } from "../../models/usuario/userProfile.model";
 import { SystemNavigationModel } from "../../models/usuario/value-object/SystemNavigation.model";
@@ -14,6 +15,6 @@ export interface ICoreService {
     GetUserImage(uuid: string): Promise<UserImagesModel>;
     UpdateUserProfile(uuid: string, body: UserProfileModel): Promise<UserProfileModel>;
     GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel>;
-    getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<any>;
+    getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<FacturaModel[]>;
 
 }
