@@ -20,6 +20,7 @@ import { UserOrganizacionProfileModel } from 'src/core/domain/models/usuario/use
 import { UserOrganizacionProfileCoreDto } from './dto/userOrganizacionProfile.core.dto';
 import { FacturaCoreResponse } from './dto/factura.coreResponse';
 import { FacturaModel } from 'src/core/domain/models/factura.model';
+import { FacturaUpdateRequestDto } from '../../inbound/http/dto/facturaUpdate.request.dto';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
@@ -126,15 +127,12 @@ export class CoreServiceClientAdapter implements ICoreService {
 
     async getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<FacturaModel[]> {
         const startedAt = Date.now();
-        this.logger.log(`[START] Core.getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID}`);
         try {
             const { data } = await this.coreClient.get<ApiResponse<FacturaCoreResponse[]>>(`/factura/list/${uuid}/${organizacionUUID}`);
-            this.logger.log(`[OK] Core.getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID} | durationMs=${Date.now() - startedAt}`);
             return (data.data as FacturaCoreResponse[]).map(FacturaCoreResponse.toModel);
         }
         catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
-                this.logger.warn(`[MISS] Core.getFacturasByUserUUID 404 | userUuid=${uuid} | organizacionUUID=${organizacionUUID} | durationMs=${Date.now() - startedAt}`);
                 throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
             }
             this.logger.error(`Error consultando servicio Core para usuario ${uuid} | organizacionUUID=${organizacionUUID}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
@@ -142,4 +140,20 @@ export class CoreServiceClientAdapter implements ICoreService {
             throw new InternalServerErrorException('Error consultando servicio Core');
         }
     }
+
+    async updateFactura(uuid: string, body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }> {
+        try {
+            const { data } = await this.coreClient.patch<ApiResponse<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }>>(`/factura`, body);
+            return data.data as { campo: string, id: string, valor: any, isUpdate: any, mensaje: string };
+        }
+        catch (error: any) {
+            if (isAxiosError(error) && error.response?.status === 404) {
+                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
+            }
+            this.logger.error(`Error consultando servicio Core para usuario ${uuid} | organizacionUUID=${uuid}: ${error.message} `, error.stack);
+            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
+            throw new InternalServerErrorException('Error consultando servicio Core');
+        }
+    }
+
 }

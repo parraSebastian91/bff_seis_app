@@ -1,4 +1,5 @@
 
+import { FacturaUpdateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaUpdate.request.dto";
 import { FacturaModel } from "../../models/factura.model";
 import { UserOrganizacionProfileModel } from "../../models/usuario/userOrganizacionProfile.model";
 import { UserProfileModel, UserImagesModel } from "../../models/usuario/userProfile.model";
@@ -16,5 +17,5 @@ export interface ICoreService {
     UpdateUserProfile(uuid: string, body: UserProfileModel): Promise<UserProfileModel>;
     GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel>;
     getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<FacturaModel[]>;
-
+    updateFactura(userUUID: string, body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }>;
 }

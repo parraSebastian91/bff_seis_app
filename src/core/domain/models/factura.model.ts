@@ -1,6 +1,7 @@
 import { facturaEstado } from "./constantes.model";
 
 export class FacturaModel {
+    facturaId: string;
     assetId: string;
     ownerUUID: string;
     nombre_mandante: string;
@@ -14,7 +15,9 @@ export class FacturaModel {
     status: facturaEstado;
     correlationId: string;
     storage_key: string;
+    ofertas: string;
     constructor(ownerUUID: string, gestor: string, status: facturaEstado, correlationId: string) {
+        this.facturaId = "";
         this.assetId = "";
         this.ownerUUID = ownerUUID;
         this.nombre_mandante = "";
@@ -28,6 +31,7 @@ export class FacturaModel {
         this.status = status;
         this.correlationId = correlationId;
         this.storage_key = "";
+        this.ofertas = "0";
     }
 
 }
