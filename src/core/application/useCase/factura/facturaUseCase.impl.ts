@@ -1,4 +1,6 @@
 import { Logger } from "@nestjs/common";
+import { url } from "node:inspector";
+import { facturaEstado } from "src/core/domain/models/constantes.model";
 import { FacturaModel } from "src/core/domain/models/factura.model";
 import { IFacturaUseCase } from "src/core/domain/ports/inbound/facturaUseCase.port";
 import { ICoreService } from "src/core/domain/ports/outbound/core.service.interface";
@@ -17,44 +19,46 @@ export class FacturaUseCaseImpl implements IFacturaUseCase {
         private readonly storageService: IStorageService,
     ) { }
 
-    async ExecuteGetFacturas(userUUID: string, organizacionUUID: string): Promise<FacturaModel[]> {
+    async ExecuteGetFacturas(userUUID: string, organizacionUUID: string, correlationId: string): Promise<FacturaModel[]> {
         const startedAt = Date.now();
-        this.logger.log(`[START] Obtener Facturas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID}`);
-
-        const facturas = await this.facturaCoreService.getFacturasByUserUUID(userUUID, organizacionUUID);
-
-        const facturasConStorageKey = facturas.filter((factura) => this.hasValidStorageKey(factura.storage_key));
-        const skipped = facturas.length - facturasConStorageKey.length;
-
-        this.logger.log(`[START] Resolver URLs | total=${facturas.length} | elegibles=${facturasConStorageKey.length} | skipped=${skipped}`);
-
-        const requests = facturasConStorageKey.map((factura) =>
-            this.storageService.getPresignedGetUrl(factura.storage_key, factura.correlationId)
-        );
-        const results = await Promise.allSettled(requests);
-
-        let fulfilled = 0;
-        let rejected = 0;
-
-        results.forEach((result, index) => {
-            const factura = facturasConStorageKey[index];
-
-            if (result.status === "fulfilled") {
-                fulfilled += 1;
-                factura.storage_key = result.value;
-                return;
+        this.logger.log(`[START] GetFacturas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId}`);
+        
+        try {
+            const facturas = await this.facturaCoreService.getFacturasByUserUUID(userUUID, organizacionUUID);
+            const facturasConStorageKey = facturas.filter((factura) => this.hasValidStorageKey(factura.status));
+            
+            if (facturasConStorageKey.length === 0) {
+                this.logger.log(`[OK] GetFacturas | userUuid=${userUUID} | totalFacturas=${facturas.length} | facturasConURL=0 | durationMs=${Date.now() - startedAt}`);
+                return facturas;
             }
+            
+            const urlByIdRequest = await this.facturaCoreService.getUrlFactura(facturasConStorageKey, userUUID, organizacionUUID, correlationId);
 
-            rejected += 1;
-            factura.storage_key = "N/A";
-            const reason = result.reason?.message ?? result.reason;
-            this.logger.error(`[FAIL] URL factura | assetId=${factura.assetId} | correlationId=${factura.correlationId} | reason=${reason}`);
-        });
-
-        this.logger.log(`[OK] Resolver URLs | fulfilled=${fulfilled} | rejected=${rejected} | skipped=${skipped}`);
-
-        this.logger.log(`[OK] Facturas obtenidas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID} | durationMs=${Date.now() - startedAt}`);
-        return facturas;
+            const result = facturas.map((factura) => {
+                if (!this.hasValidStorageKey(factura.status)) {
+                    factura.storage_key = 'N/A';
+                    return factura;
+                }
+                
+                const urlData = urlByIdRequest.find(url => url.id === factura.facturaId);
+                console.log(urlData)
+                if (urlData) {
+                    factura.storage_key = urlData.keyUrl;
+                    this.logger.debug(`URL asignada para factura ${factura.facturaId}`);
+                } else {
+                    factura.storage_key = 'N/A';
+                    this.logger.warn(`No se encontró URL para factura con ID ${factura.facturaId} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId}`);
+                }
+                console.log(`FacturaID: ${factura.facturaId}, StorageKey: ${factura.storage_key}`);
+                return factura;
+            });
+            
+            this.logger.log(`[OK] GetFacturas | userUuid=${userUUID} | totalFacturas=${facturas.length} | facturasConURL=${facturasConStorageKey.length} | durationMs=${Date.now() - startedAt}`);
+            return result;
+        } catch (error: any) {
+            this.logger.error(`Error en GetFacturas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId} | error=${error?.message} | durationMs=${Date.now() - startedAt}`, error.stack);
+            throw error;
+        }
     }
 
     async ExecuteUpdateFacturas(userUUID: string, body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }> {
@@ -115,12 +119,8 @@ export class FacturaUseCaseImpl implements IFacturaUseCase {
     //     this.logger.log(`[OK] URLs facturas procesadas | total=${facturasConStorageKey.length} | skipped=${skipped}`);
     // }
 
-    private hasValidStorageKey(storageKey: string | null | undefined): boolean {
-        if (!storageKey) {
-            return false;
-        }
-
-        return storageKey.trim().toUpperCase() !== "N/A";
+    private hasValidStorageKey(status: string | null | undefined): boolean {
+        return status === facturaEstado.PENDIENTE_VALIDACION;
     }
 
     private async sleep(ms: number): Promise<void> {

@@ -24,9 +24,13 @@ export class FacturasController {
         @Req() req: Request,
         @Res() res: Response
     ): Promise<any> {
-        this.logger.log(`listar facturas | organizacionUUID=${organizacionUUID}`);
+        const startedAt = Date.now();
+        const correlationId = req["correlationId"];
         const userSession = req["user"];
-        const facturas = await this.facturaUseCase.ExecuteGetFacturas(userSession["userUuid"], organizacionUUID);
+        this.logger.debug(`[START] getFacturas - CorrelationID: ${correlationId}`);
+        const facturas = await this.facturaUseCase.ExecuteGetFacturas(userSession["userUuid"], organizacionUUID, correlationId);
+        const endedAt = Date.now();
+        this.logger.debug(`[END] getFacturas - CorrelationID: ${correlationId}, Duration: ${endedAt - startedAt}ms`);
         return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, "Extracción exitosa", facturas));
     }
 

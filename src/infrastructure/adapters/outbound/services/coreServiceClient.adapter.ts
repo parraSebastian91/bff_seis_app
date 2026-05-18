@@ -172,4 +172,26 @@ export class CoreServiceClientAdapter implements ICoreService {
         }
     }
 
+    async getUrlFactura(facturas: FacturaModel[], userUUID: string, organizacionUUID: string, correlationId: string): Promise<{ id: string, keyUrl: string }[]> {
+        const body = {
+            userUUID,
+            organizacionUUID,
+            facturas: facturas.map(factura => (
+                 factura.facturaId
+            ))
+        }
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<{ id: string, keyUrl: string }[]>>(`/factura/url`, body);
+            return data.data as { id: string, keyUrl: string }[]; 
+        }
+        catch (error: any) {
+            if (isAxiosError(error) && error.response?.status === 404) {
+                throw new NotFoundException(`Factura no encontrada en Core`);
+            }
+            this.logger.error(`Error consultando servicio Core para factura | organizacionUUID=${body.organizacionUUID} | facturaId=${body.facturas.map(f => f).join(', ')} | correlationId=${correlationId}: ${error.message} `, error.stack);
+            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
+            throw new InternalServerErrorException('Error consultando servicio Core');
+        }
+    }
+
 }
