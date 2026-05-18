@@ -21,6 +21,7 @@ import { UserOrganizacionProfileCoreDto } from './dto/userOrganizacionProfile.co
 import { FacturaCoreResponse } from './dto/factura.coreResponse';
 import { FacturaModel } from 'src/core/domain/models/factura.model';
 import { FacturaUpdateRequestDto } from '../../inbound/http/dto/facturaUpdate.request.dto';
+import { FacturaCreateRequestDto } from '../../inbound/http/dto/facturaCreate.request.dto';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
@@ -151,6 +152,21 @@ export class CoreServiceClientAdapter implements ICoreService {
                 throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
             }
             this.logger.error(`Error consultando servicio Core para usuario ${uuid} | organizacionUUID=${uuid}: ${error.message} `, error.stack);
+            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
+            throw new InternalServerErrorException('Error consultando servicio Core');
+        }
+    }
+
+    async publicarFactura(body: FacturaCreateRequestDto): Promise<FacturaModel> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<FacturaCoreResponse>>(`/factura`, body);
+            return FacturaCoreResponse.toModel(data.data as FacturaCoreResponse);
+        }
+        catch (error: any) {
+            if (isAxiosError(error) && error.response?.status === 404) {
+                throw new NotFoundException(`Factura no encontrada en Core`);
+            }
+            this.logger.error(`Error consultando servicio Core para factura | organizacionUUID=${body.ownerUUID} | facturaId=${body.facturaId} | correlationId=${body.correlationId}: ${error.message} `, error.stack);
             this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
             throw new InternalServerErrorException('Error consultando servicio Core');
         }

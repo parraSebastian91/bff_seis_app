@@ -5,7 +5,10 @@ export class FacturaCoreResponse {
     publiInvoiceId: string;
     assetId: string;
     ownerUUID: string;
-    gestor: string;
+    gestor: {
+        uuid: string;
+        username: string;
+    };
     nombre_mandante: string;
     rut_mandante: string;
     deudorNombre: string;
@@ -18,7 +21,7 @@ export class FacturaCoreResponse {
     storage_key: string;
     ofertas: string;
 
-    constructor(ownerUUID: string, gestor: string, status: facturaEstado, correlationId: string) {
+    constructor(ownerUUID: string, gestor: { uuid: string, username: string }, status: facturaEstado, correlationId: string) {
         this.publiInvoiceId = "";
         this.assetId = "";
         this.ownerUUID = ownerUUID;
@@ -37,13 +40,13 @@ export class FacturaCoreResponse {
     }
 
     static toModel(data: FacturaCoreResponse): FacturaModel {
+        console.log(data);
         const factura = new FacturaModel(
             data.ownerUUID,
-            data.gestor,
+            { uuid: data.gestor.uuid, username: data.gestor.username },
             data.status,
             data.correlationId
         );
-
         factura.facturaId = data.publiInvoiceId;
         factura.assetId = data.assetId;
         factura.nombre_mandante = data.nombre_mandante;

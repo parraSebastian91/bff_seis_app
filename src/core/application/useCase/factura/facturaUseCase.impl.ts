@@ -3,6 +3,7 @@ import { FacturaModel } from "src/core/domain/models/factura.model";
 import { IFacturaUseCase } from "src/core/domain/ports/inbound/facturaUseCase.port";
 import { ICoreService } from "src/core/domain/ports/outbound/core.service.interface";
 import { IStorageService } from "src/core/domain/ports/outbound/storage.service.interface";
+import { FacturaCreateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaCreate.request.dto";
 import { FacturaUpdateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaUpdate.request.dto";
 
 export class FacturaUseCaseImpl implements IFacturaUseCase {
@@ -64,6 +65,18 @@ export class FacturaUseCaseImpl implements IFacturaUseCase {
         const FacturaEditada = await this.facturaCoreService.updateFactura(userUUID, body);
 
         return FacturaEditada;
+    }
+
+    async ExecutePublicarFactura(gestor: { userUuid: string, username: string }, correlationId: string, body: FacturaCreateRequestDto): Promise<FacturaModel> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Publicar Factura | userUuid=${gestor.userUuid} | body=${JSON.stringify(body)} | correlationId=${correlationId}`);
+        body.correlationId = correlationId;
+        body.gestor.uuid = gestor.userUuid;
+        body.gestor.username = gestor.username;
+        const factura = await this.facturaCoreService.publicarFactura(body);
+
+        this.logger.log(`[OK] Factura publicada | userUuid=${gestor.userUuid} | facturaId=${factura.facturaId} | durationMs=${Date.now() - startedAt}`);
+        return factura;
     }
 
     // private async resolveFacturaUrlsInBatches(facturas: FacturaModel[]): Promise<void> {

@@ -6,7 +6,10 @@ export class FacturaModel {
     ownerUUID: string;
     nombre_mandante: string;
     rut_mandante: string;
-    gestor: string;
+    gestor: {
+        uuid: string;
+        username: string;
+    };
     deudorNombre: string;
     deudorRut: string;
     facturaNumero: string;
@@ -16,7 +19,7 @@ export class FacturaModel {
     correlationId: string;
     storage_key: string;
     ofertas: string;
-    constructor(ownerUUID: string, gestor: string, status: facturaEstado, correlationId: string) {
+    constructor(ownerUUID: string, gestor: { uuid: string, username: string }, status: facturaEstado, correlationId: string) {
         this.facturaId = "";
         this.assetId = "";
         this.ownerUUID = ownerUUID;

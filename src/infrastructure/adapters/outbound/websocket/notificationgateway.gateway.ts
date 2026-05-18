@@ -97,6 +97,7 @@ export class NotificationGatewayGateway implements INotificationHandler, OnGatew
 
     @OnEvent('ws.event.send')
     async handleEventSender(event: NotificacionDTO<any>): Promise<void> {
+        console.log(`[WS-DEBUG] handleEventSender received event: ${JSON.stringify(event)}`);
         const sessionFromActive = await this.resolveUsernameFromActiveSession(event.gestor);
 
         if (!sessionFromActive) {
@@ -119,12 +120,12 @@ export class NotificationGatewayGateway implements INotificationHandler, OnGatew
     }
 
     private async resolveUsernameFromActiveSession(username: string): Promise<WsSession | undefined> {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
         try {
             const sockets = await this.server.fetchSockets();
-            const socketWithSession = sockets.find((socket) => {
+            const socketWithSession = sockets.find((socket) => {                
                 const session = socket.data?.session as WsSession | undefined;
-                console.log(`[WS-DEBUG] Revisando socket ${socket.id} para sessionUserUuid=${session?.userUuid} | sessionUsername=${session?.username}`);
-                return session?.username === username;
+                return isUUID ? session?.userUuid === username : session?.username === username;
             });
             console.log(`[WS-DEBUG] Socket encontrado para username=${username}: ${socketWithSession?.data?.session}`);
             const session = socketWithSession?.data?.session as WsSession | undefined;

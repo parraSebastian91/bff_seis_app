@@ -4,6 +4,7 @@ import { FacturaModel } from "../../models/factura.model";
 import { UserOrganizacionProfileModel } from "../../models/usuario/userOrganizacionProfile.model";
 import { UserProfileModel, UserImagesModel } from "../../models/usuario/userProfile.model";
 import { SystemNavigationModel } from "../../models/usuario/value-object/SystemNavigation.model";
+import { FacturaCreateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaCreate.request.dto";
 
 
 export const CORE_SERVICE_CLIENT = 'CORE_SERVICE_CLIENT';
@@ -18,4 +19,5 @@ export interface ICoreService {
     GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel>;
     getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<FacturaModel[]>;
     updateFactura(userUUID: string, body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }>;
+    publicarFactura(body: FacturaCreateRequestDto): Promise<FacturaModel>;
 }
