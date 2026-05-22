@@ -1,3 +1,5 @@
+import { facturaEstado } from "src/core/domain/models/constantes.model";
+
 export interface FacturaCreateRequestDto {
     facturaId: string;
     ownerUUID: string;
@@ -6,7 +8,9 @@ export interface FacturaCreateRequestDto {
     nombreDeudor: string;
     correlationId: string;
     montoTotal: number;
-    fechaVencimiento: Date;
+    fechaVencimiento: Date;    
+    status: facturaEstado;
+    
     gestor: {
         uuid: string;
         username: string;
