@@ -77,6 +77,7 @@ export class FacturaUseCaseImpl implements IFacturaUseCase {
         body.correlationId = correlationId;
         body.gestor.uuid = gestor.userUuid;
         body.gestor.username = gestor.username;
+        console.log(body);
         const factura = await this.facturaCoreService.publicarFactura(body);
 
         this.logger.log(`[OK] Factura publicada | userUuid=${gestor.userUuid} | facturaId=${factura.facturaId} | durationMs=${Date.now() - startedAt}`);

@@ -9,8 +9,7 @@ export interface FacturaCreateRequestDto {
     correlationId: string;
     montoTotal: number;
     fechaVencimiento: Date;    
-    status: facturaEstado;
-    
+    status: facturaEstado;    
     gestor: {
         uuid: string;
         username: string;
