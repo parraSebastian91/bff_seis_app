@@ -10,6 +10,7 @@ import type { Response, Request } from 'express';
 import { ApiResponse } from '../model/api-response.model';
 import { FacturaUpdateRequestDto } from '../dto/facturaUpdate.request.dto';
 import { FacturaCreateRequestDto } from '../dto/facturaCreate.request.dto';
+import { AutorizacionPublicacionRequestDto } from '../dto/autorizacionPublicacion.request.dto';
 
 @Controller('facturas')
 @UseFilters(ErrorHandler)
@@ -76,6 +77,24 @@ export class FacturasController {
         return res.status(HttpStatus.CREATED).json(new ApiResponse(HttpStatus.CREATED, "Creación exitosa", factura));
     }
 
+    @Post("autorizacion")
+    @Roles("CLIENTE_CEDENTE",
+        "ADMIN_CEDENTE",
+        "SUPER_ADMIN")
+    async registrarAutorizacion(
+        @Req() req: Request,
+        @Res() res: Response
+    ): Promise<any> {
+        const userSession = req["user"];
+        const correlationId = req["correlationId"];
+        const ipAddress = req.ip || req.socket?.remoteAddress || 'unknown';
+        const userAgent = req.headers['user-agent'] || 'unknown';
+        const body = req.body as AutorizacionPublicacionRequestDto;
+        this.logger.debug(`[START] registrarAutorizacion - Usuario: ${userSession?.userUuid}, FacturaID: ${body.facturaId}, Acepto: ${body.acepto}, CorrelationID: ${correlationId}`);
+        await this.facturaUseCase.ExecuteRegistrarAutorizacion(userSession["userUuid"], ipAddress, userAgent, correlationId, body);
+        this.logger.debug(`[END] registrarAutorizacion - Usuario: ${userSession?.userUuid}, FacturaID: ${body.facturaId}`);
+        return res.status(HttpStatus.CREATED).json(new ApiResponse(HttpStatus.CREATED, "Autorización registrada", null));
+    }
 
 }
 

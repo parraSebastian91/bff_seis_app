@@ -17,6 +17,7 @@ import { IStorageService } from '../domain/ports/outbound/storage.service.interf
 import { NotificationUseCase } from './useCase/notification/notification.usecase.impl';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FacturaUseCaseImpl } from './useCase/factura/facturaUseCase.impl';
+import { TerminosUseCaseImpl } from './useCase/terminos/terminosUseCase.impl';
 
 export type ApplicationModuleOptions = {
     modules: any[];
@@ -35,6 +36,7 @@ export const PORTAL_USE_CASE = 'PORTAL_USE_CASE';
 export const OBJECT_MANAGER_USE_CASE = 'OBJECT_MANAGER_USE_CASE';
 export const NOTIFICATION_USE_CASE = 'NOTIFICATION_USE_CASE';
 export const FACTURA_USE_CASE = 'FACTURA_USE_CASE';
+export const TERMINOS_USE_CASE = 'TERMINOS_USE_CASE';
 
 
 @Module({})
@@ -124,6 +126,14 @@ export class ApplicationModule {
             }
         }
 
+        const TerminosUseCaseProvider = {
+            provide: TERMINOS_USE_CASE,
+            inject: [coreServiceClientAdapter],
+            useFactory(coreServiceClient: ICoreService) {
+                return new TerminosUseCaseImpl(coreServiceClient);
+            }
+        }
+
 
         return {
             module: ApplicationModule,
@@ -147,7 +157,8 @@ export class ApplicationModule {
                 portalUseCaseProvider,
                 ObjectManagerUseCaseProvider,
                 NotificationUseCaseProvider,
-                FacturasUseCaseProvider
+                FacturasUseCaseProvider,
+                TerminosUseCaseProvider
 
             ],
             exports: [
@@ -156,7 +167,8 @@ export class ApplicationModule {
                 PORTAL_USE_CASE,
                 OBJECT_MANAGER_USE_CASE,
                 NOTIFICATION_USE_CASE,
-                FACTURA_USE_CASE
+                FACTURA_USE_CASE,
+                TERMINOS_USE_CASE
             ],
         };
     }

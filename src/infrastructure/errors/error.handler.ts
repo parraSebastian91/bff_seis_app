@@ -1,4 +1,4 @@
-import { Catch, ExceptionFilter, ArgumentsHost, Logger, HttpStatus, ForbiddenException, UnauthorizedException } from "@nestjs/common";
+import { Catch, ExceptionFilter, ArgumentsHost, HttpException, Logger, HttpStatus, ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { TokenExpiredError } from "@nestjs/jwt";
 import { Request, Response } from "express";
 import { ParameterNotFoundError } from "src/core/domain/errors/ParameterNotFound.error";
@@ -30,6 +30,13 @@ export class ErrorHandler implements ExceptionFilter {
             Logger.warn(`ParameterNotFoundError: ${exception.message}`);
             status = HttpStatus.BAD_REQUEST;
             message = exception.message;
+        } else if (exception instanceof HttpException) {
+            status = exception.getStatus();
+            const body = exception.getResponse();
+            message = typeof body === 'object' && body !== null && 'message' in body
+                ? (body as any).message
+                : exception.message;
+            Logger.warn(`HttpException from upstream | status=${status} | message=${message}`);
         }
         else {
             Logger.error(`Unexpected error: ${exception.message}`, exception.stack);

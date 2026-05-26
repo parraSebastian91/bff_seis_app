@@ -17,6 +17,7 @@ import { AccessTokenContext } from './middleware/access-token.context';
 import { PortalCoreController } from './controllers/portal-core.controller';
 import { ObjectManagerController } from './controllers/object-manager.controller';
 import { FacturasController } from './controllers/facturas.controller';
+import { TerminosController } from './controllers/terminos.controller';
 
 @Module({
     imports: [
@@ -30,7 +31,8 @@ import { FacturasController } from './controllers/facturas.controller';
         PortalCoreController,
         HealthCheckController,
         ObjectManagerController,
-        FacturasController
+        FacturasController,
+        TerminosController
     ],
     providers: [
         AccessTokenContext,

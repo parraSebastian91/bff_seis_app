@@ -3,7 +3,7 @@ https://docs.nestjs.com/providers#services
 */
 
 
-import { Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { HttpException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import type { AxiosInstance } from 'axios';
 import { isAxiosError } from 'axios';
 import { ICoreService, CORE_SERVICE_CLIENT } from '../../../../core/domain/ports/outbound/core.service.interface'
@@ -22,6 +22,7 @@ import { FacturaCoreResponse } from './dto/factura.coreResponse';
 import { FacturaModel } from 'src/core/domain/models/factura.model';
 import { FacturaUpdateRequestDto } from '../../inbound/http/dto/facturaUpdate.request.dto';
 import { FacturaCreateRequestDto } from '../../inbound/http/dto/facturaCreate.request.dto';
+import { VersionTerminosCoreResponse, VersionTerminosModel } from './dto/versionTerminos.coreResponse';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
@@ -30,6 +31,22 @@ export class CoreServiceClientAdapter implements ICoreService {
         private configService: ConfigService,
         @Inject(CORE_SERVICE_CLIENT) private readonly coreClient: AxiosInstance,
     ) { }
+
+    /**
+     * Re-lanza el error HTTP original de ms-core preservando status y mensaje.
+     * Si no hay respuesta Axios, lanza InternalServerErrorException.
+     */
+    private rethrowCoreError(error: any, context: string): never {
+        if (isAxiosError(error) && error.response) {
+            const status = error.response.status;
+            const body = error.response.data;
+            const message = body?.message ?? error.message;
+            this.logger.warn(`[CORE ERROR] ${context} | status=${status} | message=${message}`);
+            throw new HttpException({ status, message }, status);
+        }
+        this.logger.error(`[CORE UNEXPECTED] ${context} | ${error.message}`, error.stack);
+        throw new InternalServerErrorException('Error consultando servicio Core');
+    }
 
     async GetUserProfile(uuid: string): Promise<UserProfileModel> {
         const startedAt = Date.now();
@@ -40,13 +57,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             this.logger.log(`[OK] Core.GetUserProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
             return UserProfileCoreDTO.toModel(data.data as UserProfileCoreDTO);
         } catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                this.logger.warn(`[MISS] Core.GetUserProfile 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `GetUserProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
         }
     }
 
@@ -59,13 +70,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             this.logger.log(`[OK] Core.GetPortalenuByUsuario | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
             return SystemNavigationDTO.toModel(data.data as SystemNavigationModel);
         } catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                this.logger.warn(`[MISS] Core.GetPortalMenuByUsuario 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `GetPortalMenuByUsuario | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
         }
     }
 
@@ -78,13 +83,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             const urlBase = `${this.configService.get<string>("minio.publicEndpoint")}/${this.configService.get<string>("minio.bucket.publicProcessed")}` as string;
             return data.data ? ProfileImageCoreQueryResponse.toDomainModel(data.data, urlBase) : new UserImagesModel();
         } catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                this.logger.warn(`[MISS] Core.GetUserImage 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-                throw new ProfileImageError(`Imagen de usuario ${uuid} no encontrada en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para imagen de usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `GetUserImage | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
         }
     }
 
@@ -97,13 +96,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             this.logger.log(`[OK] Core.UpdateUserProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
             return UserProfileReqResDTO.toModel(data.data as UserProfileReqResDTO);
         } catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                this.logger.warn(`[MISS] Core.UpdateUserProfile 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `UpdateUserProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
         }
     }
 
@@ -116,13 +109,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             return UserOrganizacionProfileCoreDto.toModel(data.data as UserOrganizacionProfileCoreDto[]);
         }
         catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                this.logger.warn(`[MISS] Core.GetUserOrganizacionProfile 404 | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
-                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para usuario ${uuid}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `GetUserOrganizacionProfile | userUuid=${uuid} | durationMs=${Date.now() - startedAt}`);
         }
     }
 
@@ -133,12 +120,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             return (data.data as FacturaCoreResponse[]).map(FacturaCoreResponse.toModel);
         }
         catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para usuario ${uuid} | organizacionUUID=${organizacionUUID}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID}`);
         }
     }
 
@@ -148,12 +130,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             return data.data as { campo: string, id: string, valor: any, isUpdate: any, mensaje: string };
         }
         catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                throw new NotFoundException(`Usuario ${uuid} no encontrado en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para usuario ${uuid} | organizacionUUID=${uuid}: ${error.message} `, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `updateFactura | uuid=${uuid}`);
         }
     }
 
@@ -163,12 +140,7 @@ export class CoreServiceClientAdapter implements ICoreService {
             return FacturaCoreResponse.toModel(data.data as FacturaCoreResponse);
         }
         catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                throw new NotFoundException(`Factura no encontrada en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para factura | organizacionUUID=${body.ownerUUID} | facturaId=${body.facturaId} | correlationId=${body.correlationId}: ${error.message} `, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `publicarFactura | ownerUUID=${body.ownerUUID} | facturaId=${body.facturaId}`);
         }
     }
 
@@ -185,12 +157,32 @@ export class CoreServiceClientAdapter implements ICoreService {
             return data.data as { id: string, keyUrl: string }[]; 
         }
         catch (error: any) {
-            if (isAxiosError(error) && error.response?.status === 404) {
-                throw new NotFoundException(`Factura no encontrada en Core`);
-            }
-            this.logger.error(`Error consultando servicio Core para factura | organizacionUUID=${body.organizacionUUID} | facturaId=${body.facturas.map(f => f).join(', ')} | correlationId=${correlationId}: ${error.message} `, error.stack);
-            this.logger.debug(error.response ? `Respuesta del servicio Core: ${JSON.stringify(error.response.data)}` : 'No response data');
-            throw new InternalServerErrorException('Error consultando servicio Core');
+            this.rethrowCoreError(error, `getUrlFactura | organizacionUUID=${body.organizacionUUID}`);
+        }
+    }
+
+    async getVersionTerminosActiva(): Promise<VersionTerminosModel> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<VersionTerminosCoreResponse>>(`/factura/terminos/activo`);
+            return VersionTerminosCoreResponse.toModel(data.data as VersionTerminosCoreResponse);
+        } catch (error: any) {
+            this.rethrowCoreError(error, 'getVersionTerminosActiva');
+        }
+    }
+
+    async registrarAutorizacion(payload: {
+        facturaId: string;
+        versionTerminosId: string;
+        acepto: boolean;
+        usuarioUUID: string;
+        ipAddress: string;
+        userAgent: string;
+        correlationId: string;
+    }): Promise<void> {
+        try {
+            await this.coreClient.post<ApiResponse<void>>(`/factura/autorizacion`, payload);
+        } catch (error: any) {
+            this.rethrowCoreError(error, `registrarAutorizacion | facturaId=${payload.facturaId} | usuarioUUID=${payload.usuarioUUID}`);
         }
     }
 

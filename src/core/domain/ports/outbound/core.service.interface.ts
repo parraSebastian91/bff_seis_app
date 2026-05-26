@@ -5,6 +5,7 @@ import { UserOrganizacionProfileModel } from "../../models/usuario/userOrganizac
 import { UserProfileModel, UserImagesModel } from "../../models/usuario/userProfile.model";
 import { SystemNavigationModel } from "../../models/usuario/value-object/SystemNavigation.model";
 import { FacturaCreateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaCreate.request.dto";
+import { VersionTerminosModel } from "src/infrastructure/adapters/outbound/services/dto/versionTerminos.coreResponse";
 
 
 export const CORE_SERVICE_CLIENT = 'CORE_SERVICE_CLIENT';
@@ -21,4 +22,6 @@ export interface ICoreService {
     updateFactura(userUUID: string, body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }>;
     publicarFactura(body: FacturaCreateRequestDto): Promise<FacturaModel>;
     getUrlFactura(facturas: FacturaModel[], userUUID: string, organizacionUUID: string, correlationId: string): Promise<{ id: string, keyUrl: string }[]>;
+    getVersionTerminosActiva(): Promise<VersionTerminosModel>;
+    registrarAutorizacion(payload: { facturaId: string; versionTerminosId: string; acepto: boolean; usuarioUUID: string; ipAddress: string; userAgent: string; correlationId: string; }): Promise<void>;
 }

@@ -7,6 +7,7 @@ import { ICoreService } from "src/core/domain/ports/outbound/core.service.interf
 import { IStorageService } from "src/core/domain/ports/outbound/storage.service.interface";
 import { FacturaCreateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaCreate.request.dto";
 import { FacturaUpdateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaUpdate.request.dto";
+import { AutorizacionPublicacionRequestDto } from "src/infrastructure/adapters/inbound/http/dto/autorizacionPublicacion.request.dto";
 
 export class FacturaUseCaseImpl implements IFacturaUseCase {
 
@@ -126,6 +127,26 @@ export class FacturaUseCaseImpl implements IFacturaUseCase {
 
     private async sleep(ms: number): Promise<void> {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async ExecuteRegistrarAutorizacion(
+        userUUID: string,
+        ipAddress: string,
+        userAgent: string,
+        correlationId: string,
+        body: AutorizacionPublicacionRequestDto
+    ): Promise<void> {
+        this.logger.log(`[START] RegistrarAutorizacion | userUuid=${userUUID} | facturaId=${body.facturaId} | acepto=${body.acepto} | correlationId=${correlationId}`);
+        await this.facturaCoreService.registrarAutorizacion({
+            facturaId: body.facturaId,
+            versionTerminosId: body.versionTerminosId,
+            acepto: body.acepto,
+            usuarioUUID: userUUID,
+            ipAddress,
+            userAgent,
+            correlationId: body.correlationId || correlationId,
+        });
+        this.logger.log(`[OK] RegistrarAutorizacion | userUuid=${userUUID} | facturaId=${body.facturaId}`);
     }
 
 }
