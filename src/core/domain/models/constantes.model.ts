@@ -7,6 +7,7 @@ export enum CATEGORY_PROCESS {
     USER_AVATAR = "user-avatar",
     USER_BANNER = "user-banner",
     DOCUMENT_DTE = "DTE-factura",
+    DOCUMENT_DTE_RESPALDO = "DTE-factura-respaldo",
 }
 
 export enum EVENT_CODES{

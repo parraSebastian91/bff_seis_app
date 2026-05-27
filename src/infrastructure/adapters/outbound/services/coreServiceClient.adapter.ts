@@ -124,13 +124,13 @@ export class CoreServiceClientAdapter implements ICoreService {
         }
     }
 
-    async updateFactura(uuid: string, body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }> {
+    async updateFactura(body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }> {
         try {
             const { data } = await this.coreClient.patch<ApiResponse<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }>>(`/factura`, body);
             return data.data as { campo: string, id: string, valor: any, isUpdate: any, mensaje: string };
         }
         catch (error: any) {
-            this.rethrowCoreError(error, `updateFactura | uuid=${uuid}`);
+            this.rethrowCoreError(error, `updateFactura | facturaId=${body.id}`);
         }
     }
 

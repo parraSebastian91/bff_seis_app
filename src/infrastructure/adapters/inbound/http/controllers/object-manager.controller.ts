@@ -63,14 +63,26 @@ export class ObjectManagerController {
     ) {
         const userSession = req["user"];
         const { objectType } = req.params;
-        let { fileName, fileType, userName, organization } = req.query as { fileName: string, fileType: string, userName: string, organization?: string };
+        let { fileName, fileType, userName, organization, idFactura } = req.query as { fileName: string, fileType: string, userName: string, organization?: string, idFactura?: string };
         if (!userName || userName === "") {
             throw new ParameterNotFoundError("El parámetro 'userName' es requerido");
         }
-        if (objectType === CATEGORY_PROCESS.DOCUMENT_DTE && !organization) {
-            throw new ParameterNotFoundError("El parámetro 'organization' es requerido para el tipo de objeto 'documents'");
+        switch (objectType) {
+            case CATEGORY_PROCESS.DOCUMENT_DTE:
+                if (!organization) {
+                    throw new ParameterNotFoundError("El parámetro 'organization' es requerido para el tipo de objeto 'documents'");
+                }
+                break;
+            case CATEGORY_PROCESS.DOCUMENT_DTE_RESPALDO:
+                if (!organization) {
+                    throw new ParameterNotFoundError("El parámetro 'organization' es requerido para el tipo de objeto 'documents respaldo'");
+                }
+                if (!idFactura) {
+                    throw new ParameterNotFoundError("El parámetro 'idFactura' es requerido para el tipo de objeto 'documents respaldo'");
+                }
+                break;
         }
-        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType, userName, organization);
+        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType, userName, organization, idFactura);
 
         return resp.status(200).json(
             new ApiResponse(HttpStatus.OK, "Presigned URL obtenida exitosamente", {

@@ -4,7 +4,8 @@ export enum CampoFactura {
     RUT_DEUDOR = "rutDeudor",
     NOMBRE_RAZON_SOCIAL_DEUDOR = "nombreRazonSocialDeudor",
     MONTO_TOTAL = "montoTotal",
-    FECHA_VENCIMIENTO = "fechaVencimiento"
+    FECHA_VENCIMIENTO = "fechaVencimiento",
+    ASSET_ID = "asset_id"
 }
 
 

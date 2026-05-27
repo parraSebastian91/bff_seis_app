@@ -8,6 +8,9 @@ import type { IMessagePublisher } from './../../../../core/domain/ports/outbound
 import type { IStorageRepository } from './../../../../core/domain/ports/outbound/storage.repository';
 import { ObjectUploadPayload } from './command/uploadObject.command';
 import type { IStorageService } from 'src/core/domain/ports/outbound/storage.service.interface';
+import type { ICoreService } from 'src/core/domain/ports/outbound/core.service.interface';
+import { CampoEditado, CampoFactura, FacturaUpdateRequestDto } from 'src/infrastructure/adapters/inbound/http/dto/facturaUpdate.request.dto';
+import { CATEGORY_PROCESS } from 'src/core/domain/models/constantes.model';
 
 const PATH_TYPES = {
     USER_AVATAR: 'user-avatar',
@@ -23,6 +26,7 @@ export class ObjectManagerService implements IObjectManagerUseCase {
         private readonly messagePublisher: IMessagePublisher,
         private readonly storageRepository: IStorageRepository,
         private readonly storageService: IStorageService,
+        private readonly coreService: ICoreService,
     ) { }
 
     async ExecuteCreateObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any> {
@@ -53,15 +57,19 @@ export class ObjectManagerService implements IObjectManagerUseCase {
         };
     }
 
-    async ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, name: string, fileType: string, userName: string, organization?: string): Promise<string> {
+    async ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, name: string, fileType: string, userName: string, organization?: string, idFactura?: string): Promise<string> {
         const startedAt = Date.now();
         const fileName = name.split('.')[0].toLowerCase();
         const normalizedFileType = this.normalizeFormatFileType(fileType);
         this.logger.log(`[START] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${normalizedFileType} | userName=${userName} | organization=${organization}`);
 
         try {
-            const url = await this.storageService.getPresignedPutUrl(userUuid, objectType, fileName, normalizedFileType, userName, organization);
+            const { url, assetId } = await this.storageService.getPresignedPutUrl(userUuid, objectType, fileName, normalizedFileType, userName, organization);
             this.logger.log(`[OK] Presigned URL obtenida | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
+            if (objectType === CATEGORY_PROCESS.DOCUMENT_DTE_RESPALDO && idFactura && organization) {
+                const updateData: FacturaUpdateRequestDto = new FacturaUpdateRequestDto(idFactura, organization, userName, new CampoEditado(CampoFactura.ASSET_ID, assetId));
+                await this.coreService.updateFactura(updateData);
+            }
             return url;
         } catch (error: any) {
             this.logger.error(`[FAIL] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
