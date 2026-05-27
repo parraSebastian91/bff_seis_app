@@ -63,6 +63,7 @@ class RedesSociales {
 
 export class UserProfileReqResDTO {
     username: string;
+    usuarioUUID: string;
     nombreCompleto: string;
     nombre: Nombre;
     datosContacto: DatosContacto;
@@ -72,6 +73,7 @@ export class UserProfileReqResDTO {
 
     constructor() { 
         this.username = "";
+        this.usuarioUUID = "";
         this.nombreCompleto = "";
         this.nombre = new Nombre(new UserProfileModel());
         this.datosContacto = new DatosContacto(new UserProfileModel());
@@ -84,7 +86,7 @@ export class UserProfileReqResDTO {
     static builder(model: UserProfileModel): UserProfileReqResDTO {
 
         const dto = new UserProfileReqResDTO();
-
+        dto.usuarioUUID = model.usuario_uuid;
         dto.username = model.username;
         dto.nombre = new Nombre(model);
         dto.nombreCompleto = dto.nombre.getNombreCompleto();

@@ -4,13 +4,13 @@ import { FacturaModel } from "src/core/domain/models/factura.model";
 export class FacturaCoreResponse {
     publiInvoiceId: string;
     assetId: string;
-    ownerUUID: string;
+    ownerUUID: string; // cedente_org_id
     gestor: {
         uuid: string;
         username: string;
     };
-    nombre_mandante: string;
-    rut_mandante: string;
+    nombre_cliente_cedente: string; // deudor_nombre
+    rut_cliente_cedente: string; // deudor_rut
     deudorNombre: string;
     deudorRut: string;
     facturaNumero: string;
@@ -18,15 +18,19 @@ export class FacturaCoreResponse {
     fechaVencimiento: Date;
     status: facturaEstado;
     correlationId: string;
-    ofertas: string;
-
+    total_ofertas: number;
+    ofertas_enviadas: number;
+    ofertas_revisadas: number;
+    ofertas_aceptadas: number;
+    ofertas_rechazadas: number;
+    url_factura: string | null;
     constructor(ownerUUID: string, gestor: { uuid: string, username: string }, status: facturaEstado, correlationId: string) {
         this.publiInvoiceId = "";
         this.assetId = "";
         this.ownerUUID = ownerUUID;
         this.gestor = gestor;
-        this.nombre_mandante = "";
-        this.rut_mandante = "";
+        this.nombre_cliente_cedente = "";
+        this.rut_cliente_cedente = "";
         this.deudorNombre = "";
         this.deudorRut = "";
         this.facturaNumero = "";
@@ -34,7 +38,12 @@ export class FacturaCoreResponse {
         this.fechaVencimiento = new Date();
         this.status = status;
         this.correlationId = correlationId;
-        this.ofertas = "0";
+        this.total_ofertas = 0;
+        this.ofertas_enviadas = 0;
+        this.ofertas_revisadas = 0;
+        this.ofertas_aceptadas = 0;
+        this.ofertas_rechazadas = 0;
+        this.url_factura = null;
     }
 
     static toModel(data: FacturaCoreResponse): FacturaModel {
@@ -47,14 +56,19 @@ export class FacturaCoreResponse {
         );
         factura.facturaId = data.publiInvoiceId;
         factura.assetId = data.assetId;
-        factura.nombre_mandante = data.nombre_mandante;
-        factura.rut_mandante = data.rut_mandante;
+        factura.nombre_cliente_cedente = data.nombre_cliente_cedente;
+        factura.rut_cliente_cedente = data.rut_cliente_cedente;
         factura.deudorNombre = data.deudorNombre;
         factura.deudorRut = data.deudorRut;
         factura.facturaNumero = data.facturaNumero;
         factura.montoTotal = data.montoTotal;
         factura.fechaVencimiento = new Date(data.fechaVencimiento);
-        factura.ofertas = data.ofertas;
+        factura.total_ofertas = data.total_ofertas;
+        factura.ofertas_enviadas = data.ofertas_enviadas;
+        factura.ofertas_revisadas = data.ofertas_revisadas;
+        factura.ofertas_aceptadas = data.ofertas_aceptadas;
+        factura.ofertas_rechazadas = data.ofertas_rechazadas;
+        factura.url_factura = data.url_factura;
         return factura;
     }
 

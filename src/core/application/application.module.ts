@@ -104,9 +104,10 @@ export class ApplicationModule {
                 queueClientAdapter,
                 storageRepositoryAdapter,
                 storageServiceAdapter,
+                coreServiceClientAdapter
             ],
-            useFactory(messagePublisher: IMessagePublisher, storageRepository: IStorageRepository, storageService: IStorageService) {
-                return new ObjectManagerService(messagePublisher, storageRepository, storageService);
+            useFactory(messagePublisher: IMessagePublisher, storageRepository: IStorageRepository, storageService: IStorageService, coreService: ICoreService) {
+                return new ObjectManagerService(messagePublisher, storageRepository, storageService, coreService);
             },
         };
 

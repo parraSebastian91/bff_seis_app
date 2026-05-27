@@ -1,6 +1,7 @@
 import { UserProfileModel } from "src/core/domain/models/usuario/userProfile.model";
 
 export class UserProfileCoreDTO {
+    usuario_uuid: string;
     username: string;
     ingreso: Date;
     activo: boolean;
@@ -24,6 +25,7 @@ export class UserProfileCoreDTO {
     static toModel(data: UserProfileCoreDTO): UserProfileModel {
         console.log("UserProfileCoreDTO.toModel | data:", data);
         const model = new UserProfileModel();
+        model.usuario_uuid = data.usuario_uuid;
         model.username = data.username;
         model.ingreso = data.ingreso;
         model.activo = data.activo;

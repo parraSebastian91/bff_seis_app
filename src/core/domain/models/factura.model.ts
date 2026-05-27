@@ -3,13 +3,13 @@ import { facturaEstado } from "./constantes.model";
 export class FacturaModel {
     facturaId: string;
     assetId: string;
-    ownerUUID: string;
-    nombre_mandante: string;
-    rut_mandante: string;
+    ownerUUID: string; // cedente_org_id
     gestor: {
         uuid: string;
         username: string;
     };
+    nombre_cliente_cedente: string; // deudor_nombre
+    rut_cliente_cedente: string; // deudor_rut
     deudorNombre: string;
     deudorRut: string;
     facturaNumero: string;
@@ -17,14 +17,18 @@ export class FacturaModel {
     fechaVencimiento: Date;
     status: facturaEstado;
     correlationId: string;
-    storage_key: string;
-    ofertas: string;
+    total_ofertas: number;
+    ofertas_enviadas: number;
+    ofertas_revisadas: number;
+    ofertas_aceptadas: number;
+    ofertas_rechazadas: number;
+    url_factura: string | null;
     constructor(ownerUUID: string, gestor: { uuid: string, username: string }, status: facturaEstado, correlationId: string) {
         this.facturaId = "";
         this.assetId = "";
         this.ownerUUID = ownerUUID;
-        this.nombre_mandante = "";
-        this.rut_mandante = "";
+        this.nombre_cliente_cedente = "";
+        this.rut_cliente_cedente = "";
         this.gestor = gestor;
         this.deudorNombre = "";
         this.deudorRut = "";
@@ -33,8 +37,12 @@ export class FacturaModel {
         this.fechaVencimiento = new Date();
         this.status = status;
         this.correlationId = correlationId;
-        this.storage_key = "";
-        this.ofertas = "0";
+        this.url_factura = null;        
+        this.total_ofertas = 0;
+        this.ofertas_enviadas = 0;
+        this.ofertas_revisadas = 0;
+        this.ofertas_aceptadas = 0;
+        this.ofertas_rechazadas = 0;
     }
 
 }

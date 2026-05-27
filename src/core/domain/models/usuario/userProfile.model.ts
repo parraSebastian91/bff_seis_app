@@ -2,6 +2,7 @@ import { USER_AVATAR_CATEGORY, USER_BANNER_CATEGORY } from "../constantes.model"
 
 export class UserProfileModel {
     username: string;
+    usuario_uuid: string;
     ingreso: Date;
     activo: boolean;
     nombres: string;
@@ -19,6 +20,7 @@ export class UserProfileModel {
     constructor(
     ) { 
             this.username = "";
+            this.usuario_uuid = "";
             this.ingreso = new Date();
             this.activo = false;
             this.nombres = "";
