@@ -2,6 +2,12 @@
 export const USER_AVATAR_CATEGORY = "user-avatar";
 export const USER_BANNER_CATEGORY = "user-banner";
 
+export enum createdBy{
+    FORM = "FORM",
+    OCR = "OCR",
+    AGENT = "AGENT"
+}
+
 
 export enum CATEGORY_PROCESS {
     USER_AVATAR = "user-avatar",

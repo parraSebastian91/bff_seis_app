@@ -25,5 +25,3 @@ export class MessageDTO {
         this.error = error;
     }
 }
-
-

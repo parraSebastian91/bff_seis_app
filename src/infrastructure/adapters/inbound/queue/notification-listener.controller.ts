@@ -52,11 +52,8 @@ export class NotificationListenerController {
           await this.notificationUseCase.ExecuteSendNotification(payload as NotificacionDTO<FacturaDTO>);
           break;
 
-        case 'STORAGE_UPLOAD_FAILED':
-          this.logger.error(
-            `[ERROR] Fallo en almacenamiento | pattern=${STORAGE_NOTIFICATION_PATTERN} | reason=${payload.data?.errorMessage}`,
-          );
-          // Manejar error, registrar en BD, notificar al usuario
+        case CATEGORY_PROCESS.DOCUMENT_DTE_RESPALDO:
+          await this.notificationUseCase.ExecuteSendNotification(payload as NotificacionDTO<FacturaDTO>);
           break;
 
         case 'STORAGE_PROCESSING':

@@ -1,4 +1,4 @@
-import { facturaEstado } from "src/core/domain/models/constantes.model";
+import { createdBy, facturaEstado } from "src/core/domain/models/constantes.model";
 import { FacturaModel } from "src/core/domain/models/factura.model";
 
 export class FacturaCoreResponse {
@@ -23,7 +23,9 @@ export class FacturaCoreResponse {
     ofertas_revisadas: number;
     ofertas_aceptadas: number;
     ofertas_rechazadas: number;
-    url_factura: string | null;
+    url_factura: string | null;    
+    createdBy: createdBy;
+    notas?: string[];
     constructor(ownerUUID: string, gestor: { uuid: string, username: string }, status: facturaEstado, correlationId: string) {
         this.publiInvoiceId = "";
         this.assetId = "";
@@ -44,6 +46,7 @@ export class FacturaCoreResponse {
         this.ofertas_aceptadas = 0;
         this.ofertas_rechazadas = 0;
         this.url_factura = null;
+        this.createdBy = createdBy.FORM;
     }
 
     static toModel(data: FacturaCoreResponse): FacturaModel {
@@ -69,6 +72,8 @@ export class FacturaCoreResponse {
         factura.ofertas_aceptadas = data.ofertas_aceptadas;
         factura.ofertas_rechazadas = data.ofertas_rechazadas;
         factura.url_factura = data.url_factura;
+        factura.createdBy = data.createdBy;
+        factura.notas = data.notas;
         return factura;
     }
 

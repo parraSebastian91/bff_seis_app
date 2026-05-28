@@ -1,4 +1,4 @@
-import { facturaEstado } from "./constantes.model";
+import { createdBy, facturaEstado } from "./constantes.model";
 
 export class FacturaModel {
     facturaId: string;
@@ -22,7 +22,9 @@ export class FacturaModel {
     ofertas_revisadas: number;
     ofertas_aceptadas: number;
     ofertas_rechazadas: number;
-    url_factura: string | null;
+    url_factura: string | null;    
+    createdBy: createdBy;
+    notas?: string[];
     constructor(ownerUUID: string, gestor: { uuid: string, username: string }, status: facturaEstado, correlationId: string) {
         this.facturaId = "";
         this.assetId = "";
@@ -43,6 +45,8 @@ export class FacturaModel {
         this.ofertas_revisadas = 0;
         this.ofertas_aceptadas = 0;
         this.ofertas_rechazadas = 0;
+        this.createdBy = createdBy.FORM;
+        this.notas = [];
     }
 
 }
