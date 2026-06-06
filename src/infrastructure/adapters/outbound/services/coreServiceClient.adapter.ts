@@ -149,12 +149,12 @@ export class CoreServiceClientAdapter implements ICoreService {
             userUUID,
             organizacionUUID,
             facturas: facturas.map(factura => (
-                 factura.facturaId
+                factura.facturaId
             ))
         }
         try {
             const { data } = await this.coreClient.post<ApiResponse<{ id: string, keyUrl: string }[]>>(`/factura/url`, body);
-            return data.data as { id: string, keyUrl: string }[]; 
+            return data.data as { id: string, keyUrl: string }[];
         }
         catch (error: any) {
             this.rethrowCoreError(error, `getUrlFactura | organizacionUUID=${body.organizacionUUID}`);
@@ -183,6 +183,16 @@ export class CoreServiceClientAdapter implements ICoreService {
             await this.coreClient.post<ApiResponse<void>>(`/factura/autorizacion`, payload);
         } catch (error: any) {
             this.rethrowCoreError(error, `registrarAutorizacion | facturaId=${payload.facturaId} | usuarioUUID=${payload.usuarioUUID}`);
+        }
+    }
+
+    async getFacturasMarketPlace(correlationId: string, scope: string, cursor?: string, limit?: number): Promise<any> {
+        try {
+            const params = { correlationId, scope, cursor, limit };
+            const { data } = await this.coreClient.get<ApiResponse<any>>(`/factura/marketplace`, { params });
+            return data.data;
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getFacturasMarketPlace | correlationId=${correlationId} | scope=${scope}`);
         }
     }
 

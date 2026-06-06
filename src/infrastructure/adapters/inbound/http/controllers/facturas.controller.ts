@@ -2,7 +2,7 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { Controller, Get, HttpStatus, Inject, Logger, Param, Patch, Post, Req, Res, UseFilters } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Logger, Param, Patch, Post, Query, Req, Res, UseFilters } from '@nestjs/common';
 import { Roles } from '../decorators/roles.decorator';
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
 import type { IFacturaUseCase } from 'src/core/domain/ports/inbound/facturaUseCase.port';
@@ -11,12 +11,16 @@ import { ApiResponse } from '../model/api-response.model';
 import { FacturaUpdateRequestDto } from '../dto/facturaUpdate.request.dto';
 import { FacturaCreateRequestDto } from '../dto/facturaCreate.request.dto';
 import { AutorizacionPublicacionRequestDto } from '../dto/autorizacionPublicacion.request.dto';
+import type { IFacturaMarketPlaceUseCase } from 'src/core/domain/ports/inbound/facturaMarketPlace.usecase';
 
 @Controller('facturas')
 @UseFilters(ErrorHandler)
 export class FacturasController {
     private readonly logger = new Logger(FacturasController.name);
-    constructor(@Inject('FACTURA_USE_CASE') private readonly facturaUseCase: IFacturaUseCase) { }
+    constructor(
+        @Inject('FACTURA_USE_CASE') private readonly facturaUseCase: IFacturaUseCase,
+        @Inject('FACTURA_MARKETPLACE_USE_CASE') private readonly facturaMarketPlaceUseCase: IFacturaMarketPlaceUseCase
+    ) { }
 
     @Get("list/:organizacionUUID")
     @Roles("USR_STD")
@@ -96,5 +100,25 @@ export class FacturasController {
         return res.status(HttpStatus.CREATED).json(new ApiResponse(HttpStatus.CREATED, "Autorización registrada", null));
     }
 
+    @Get("marketPlace")
+    @Roles(
+        "EJECUTIVO_FINANCIADORA",
+        "ADMIN_FINANCIADORA",        
+        "SUPER_ADMIN")
+    async getFacturasMarketPlace(
+        @Query("scope") scope: string,
+        @Query("cursor") cursor: string,
+        @Query("limit") limit: number,
+        @Req() req: Request,
+        @Res() res: Response
+    ): Promise<any> {
+        const startedAt = Date.now();
+        const correlationId = req["correlationId"];
+        this.logger.debug(`[START] getFacturasMarketPlace - CorrelationID: ${correlationId}`);
+        const facturas = await this.facturaMarketPlaceUseCase.ExecuteGetFacturasMarketPlace(correlationId, scope, cursor, limit);
+        const endedAt = Date.now();
+        this.logger.debug(`[END] getFacturasMarketPlace - CorrelationID: ${correlationId}, Duration: ${endedAt - startedAt}ms`);
+        return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, "Extracción exitosa", facturas));
+    }
 }
 

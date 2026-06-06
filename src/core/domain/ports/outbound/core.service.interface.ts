@@ -24,4 +24,5 @@ export interface ICoreService {
     getUrlFactura(facturas: FacturaModel[], userUUID: string, organizacionUUID: string, correlationId: string): Promise<{ id: string, keyUrl: string }[]>;
     getVersionTerminosActiva(): Promise<VersionTerminosModel>;
     registrarAutorizacion(payload: { facturaId: string; versionTerminosId: string; acepto: boolean; usuarioUUID: string; ipAddress: string; userAgent: string; correlationId: string; }): Promise<void>;
+    getFacturasMarketPlace(correlationId: string, scope: string, cursor?: string, limit?: number): Promise<any>;
 }

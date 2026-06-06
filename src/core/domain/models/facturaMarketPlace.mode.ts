@@ -1,0 +1,27 @@
+export interface FacturaMarketplace {
+    facturaId: string;
+    folio: string;
+    razonSocial: string;
+    rutDeudor: string;
+    monto: number;
+    fechaVencimiento: string;
+    diasRestantes: number;
+    cantidadOfertas: number;
+    tasaMinima: number | null;
+    esPreferido: boolean;
+    tieneOfertaPropia: boolean;
+    publicadoEn: string;
+    nueva?: boolean;
+}
+
+export interface MarketplacePage {
+    data: FacturaMarketplace[];
+    nextCursor: string | null;
+    minDiasAltaLiquidez: number;
+}
+
+export interface FacturaNuevaExterna {
+  facturaId: string;
+  razonSocial: string;
+  monto: number;
+}

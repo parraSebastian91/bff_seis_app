@@ -1,8 +1,9 @@
+import { FacturaMarketplace } from "./facturaMarketPlace.mode";
 
 export const USER_AVATAR_CATEGORY = "user-avatar";
 export const USER_BANNER_CATEGORY = "user-banner";
 
-export enum createdBy{
+export enum createdBy {
     FORM = "FORM",
     OCR = "OCR",
     AGENT = "AGENT"
@@ -16,7 +17,7 @@ export enum CATEGORY_PROCESS {
     DOCUMENT_DTE_RESPALDO = "DTE-factura-respaldo",
 }
 
-export enum EVENT_CODES{
+export enum EVENT_CODES {
     FACTURA_PUBLICADA = "FACTURA_PUBLICADA",
     FACTURA_VACIA_PUBLICADA = "FACTURA_VACIA_PUBLICADA",
     FACTURA_DUPLICADA = "FACTURA_DUPLICADA",
@@ -35,3 +36,10 @@ export enum facturaEstado {
     VENCIDA = "VENCIDA",
     DENUNCIADA = "DENUNCIADA",
 }
+
+type MarketplaceWsEvent =
+    | { event: 'factura.publicada'; factura: FacturaMarketplace }
+    | { event: 'factura.retirada'; facturaId: string }
+    | { event: 'oferta.nueva' | 'oferta.modificada'; facturaId: string; cantidadOfertas: number; tasaMinima: number | null }
+    | { event: 'mi.oferta.aceptada'; facturaId: string }
+    | { event: 'factura.nueva.externa'; facturaId: string; razonSocial: string; monto: number };
