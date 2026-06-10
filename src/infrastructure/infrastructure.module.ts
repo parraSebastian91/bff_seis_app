@@ -229,7 +229,7 @@ const NOTIFICATION_MODULE = 'NOTIFICATION_SERVICE';
         MESSAGE_PUBLISHER,
         CORE_SERVICE_CLIENT,
         PAYMENTS_CLIENT,
-        STORAGE_SERVICE
+        STORAGE_SERVICE,
     ],
 })
 export class InfrastructureModule { }

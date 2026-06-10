@@ -7,7 +7,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { UsuariosBffController } from './controllers/usuarios-bff.controller';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { SecretsModule } from '../../../secrets/secrets.module';
 import { TerminusModule } from '@nestjs/terminus';
 import { LoggerInterceptor } from './middleware/loggin.interceptor';
@@ -18,6 +18,13 @@ import { PortalCoreController } from './controllers/portal-core.controller';
 import { ObjectManagerController } from './controllers/object-manager.controller';
 import { FacturasController } from './controllers/facturas.controller';
 import { TerminosController } from './controllers/terminos.controller';
+import { MarketplaceSseController } from './controllers/marketplace-sse.controller';
+import { MarketplaceSseService } from '../../outbound/sse/marketplace-sse.service';
+import { GeoController } from './controllers/catalogo.controller';
+import { OrganizacionBffController } from './controllers/organizacion-bff.controller';
+import { SolicitudAccesoBffController } from './controllers/solicitudAcceso.controller';
+import { OrganizacionAdminBffController } from './controllers/organizacion-admin-bff.controller';
+import { SiiLookupService } from '../../../adapters/outbound/services/siiLookup.service';
 
 @Module({
     imports: [
@@ -32,10 +39,17 @@ import { TerminosController } from './controllers/terminos.controller';
         HealthCheckController,
         ObjectManagerController,
         FacturasController,
-        TerminosController
+        TerminosController,
+        MarketplaceSseController,
+        GeoController,
+        OrganizacionBffController,
+        SolicitudAccesoBffController,
+        OrganizacionAdminBffController,
     ],
     providers: [
         AccessTokenContext,
+        MarketplaceSseService,
+        SiiLookupService,
         {
             provide: APP_INTERCEPTOR,
             useClass: LoggerInterceptor,

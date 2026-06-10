@@ -17,7 +17,10 @@ import { IStorageService } from '../domain/ports/outbound/storage.service.interf
 import { NotificationUseCase } from './useCase/notification/notification.usecase.impl';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FacturaUseCaseImpl } from './useCase/factura/facturaUseCase.impl';
+import { FacturaMarketPlaceUseCase } from './useCase/marketPlace/facturaMarketPlace.usecase.impl';
 import { TerminosUseCaseImpl } from './useCase/terminos/terminosUseCase.impl';
+import { GeoCatalogoUseCase } from './useCase/catalogo/geoCatalogo.usecase';
+import { VerificacionTributariaUseCase } from './useCase/catalogo/verificacionTributaria.usecase';
 
 export type ApplicationModuleOptions = {
     modules: any[];
@@ -36,7 +39,10 @@ export const PORTAL_USE_CASE = 'PORTAL_USE_CASE';
 export const OBJECT_MANAGER_USE_CASE = 'OBJECT_MANAGER_USE_CASE';
 export const NOTIFICATION_USE_CASE = 'NOTIFICATION_USE_CASE';
 export const FACTURA_USE_CASE = 'FACTURA_USE_CASE';
+export const FACTURA_MARKETPLACE_USE_CASE = 'FACTURA_MARKETPLACE_USE_CASE';
 export const TERMINOS_USE_CASE = 'TERMINOS_USE_CASE';
+export const GEO_USE_CASE = 'GEO_USE_CASE';
+export const VERIFICACION_TRIBUTARIA_USE_CASE = 'VERIFICACION_TRIBUTARIA_USE_CASE';
 
 
 @Module({})
@@ -127,11 +133,35 @@ export class ApplicationModule {
             }
         }
 
+        const FacturaMarketplaceUseCaseProvider = {
+            provide: FACTURA_MARKETPLACE_USE_CASE,
+            inject: [coreServiceClientAdapter],
+            useFactory(coreServiceClient: ICoreService) {
+                return new FacturaMarketPlaceUseCase(coreServiceClient);
+            }
+        }
+
         const TerminosUseCaseProvider = {
             provide: TERMINOS_USE_CASE,
             inject: [coreServiceClientAdapter],
             useFactory(coreServiceClient: ICoreService) {
                 return new TerminosUseCaseImpl(coreServiceClient);
+            }
+        }
+
+        const GeoCatalogoUseCaseProvider = {
+            provide: GEO_USE_CASE,
+            inject: [coreServiceClientAdapter],
+            useFactory(coreServiceClient: ICoreService) {
+                return new GeoCatalogoUseCase(coreServiceClient);
+            }
+        }
+
+        const VerificacionTributariaUseCaseProvider = {
+            provide: VERIFICACION_TRIBUTARIA_USE_CASE,
+            inject: [coreServiceClientAdapter],
+            useFactory(coreServiceClient: ICoreService) {
+                return new VerificacionTributariaUseCase(coreServiceClient);
             }
         }
 
@@ -159,7 +189,10 @@ export class ApplicationModule {
                 ObjectManagerUseCaseProvider,
                 NotificationUseCaseProvider,
                 FacturasUseCaseProvider,
-                TerminosUseCaseProvider
+                FacturaMarketplaceUseCaseProvider,
+                TerminosUseCaseProvider,
+                GeoCatalogoUseCaseProvider,
+                VerificacionTributariaUseCaseProvider,
 
             ],
             exports: [
@@ -169,7 +202,10 @@ export class ApplicationModule {
                 OBJECT_MANAGER_USE_CASE,
                 NOTIFICATION_USE_CASE,
                 FACTURA_USE_CASE,
-                TERMINOS_USE_CASE
+                FACTURA_MARKETPLACE_USE_CASE,
+                TERMINOS_USE_CASE,
+                GEO_USE_CASE,
+                VERIFICACION_TRIBUTARIA_USE_CASE,
             ],
         };
     }

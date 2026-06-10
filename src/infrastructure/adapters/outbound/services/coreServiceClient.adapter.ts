@@ -178,7 +178,7 @@ export class CoreServiceClientAdapter implements ICoreService {
         ipAddress: string;
         userAgent: string;
         correlationId: string;
-    }): Promise<void> {
+    }): Promise<void> {4 
         try {
             await this.coreClient.post<ApiResponse<void>>(`/factura/autorizacion`, payload);
         } catch (error: any) {
@@ -193,6 +193,335 @@ export class CoreServiceClientAdapter implements ICoreService {
             return data.data;
         } catch (error: any) {
             this.rethrowCoreError(error, `getFacturasMarketPlace | correlationId=${correlationId} | scope=${scope}`);
+        }
+    }
+
+    // ── Organización ─────────────────────────────────────────────────────────
+
+    async checkRutRegistrado(rut: string): Promise<{ exists: boolean; organizacion?: { id: string; razonSocial: string; tipoPersona: string; tipoParticipante: string; giros: any[] } }> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<{ exists: boolean; organizacion?: { id: string; razonSocial: string; tipoPersona: string; tipoParticipante: string; giros: any[] } }>>(
+                `/organizacion/check-rut`,
+                { params: { rut } },
+            );
+            return data.data as { exists: boolean; organizacion?: { id: string; razonSocial: string; tipoPersona: string; tipoParticipante: string; giros: any[] } };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `checkRutRegistrado | rut=${rut.slice(0, 6)}…`);
+        }
+    }
+
+    async crearOrganizacion(payload: {
+        tipoPersona: string;
+        tipoParticipacion: string;
+        rut: string;
+        razonSocial: string;
+        giro?: string;
+    }): Promise<any> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<any>>(`/organizacion`, payload);
+            return data.data;
+        } catch (error: any) {
+            this.rethrowCoreError(error, `crearOrganizacion | rut=${payload.rut}`);
+        }
+    }
+
+    // ── Catálogo geográfico ──────────────────────────────────────────────────
+
+    async getRegiones(pais: string = 'CL'): Promise<any[]> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(`/catalogo/geo/regiones`, { params: { pais } });
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getRegiones | pais=${pais}`);
+        }
+    }
+
+    async getProvincias(regionId: number): Promise<any[]> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(`/catalogo/geo/provincias`, { params: { region_id: regionId } });
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getProvincias | regionId=${regionId}`);
+        }
+    }
+
+    async getComunas(provinciaId: number): Promise<any[]> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(`/catalogo/geo/comunas`, { params: { provincia_id: provinciaId } });
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getComunas | provinciaId=${provinciaId}`);
+        }
+    }
+
+    async getBancos(pais: string = 'CL'): Promise<any[]> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(`/catalogo/bancos`, { params: { pais } });
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getBancos | pais=${pais}`);
+        }
+    }
+
+    async getProductosFinancieros(tipoOrg?: string): Promise<any[]> {
+        try {
+            const params = tipoOrg ? { tipo_org: tipoOrg } : {};
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(`/catalogo/productos-financieros`, { params });
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getProductosFinancieros | tipoOrg=${tipoOrg}`);
+        }
+    }
+
+    async guardarVerificacionTributaria(payload: {
+        organizacionId: number;
+        rawResponse: Record<string, any>;
+        fuente: string;
+    }): Promise<{ id: number }> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<{ id: number }>>(
+                `/organizacion/verificacion-tributaria`,
+                payload,
+            );
+            return data.data as { id: number };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `guardarVerificacionTributaria | organizacionId=${payload.organizacionId}`);
+        }
+    }
+
+    // ── Solicitudes de acceso ─────────────────────────────────────────────────
+
+    async crearSolicitudAccesoPorUuid(uuid: string, payload: {
+        solicitanteUuid: string;
+        rolSolicitado?: string;
+        mensaje?: string;
+    }): Promise<any> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<any>>(
+                `/organizacion/uuid/${uuid}/solicitud-ingreso`,
+                payload,
+            );
+            return data.data;
+        } catch (error: any) {
+            this.rethrowCoreError(error, `crearSolicitudAccesoPorUuid | uuid=${uuid}`);
+        }
+    }
+
+    async crearSolicitudAcceso(organizacionId: number, payload: {
+        solicitanteUuid: string;
+        rolSolicitado?: string;
+        mensaje?: string;
+    }): Promise<any> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<any>>(
+                `/organizacion/${organizacionId}/solicitud-acceso`,
+                payload,
+            );
+            return data.data;
+        } catch (error: any) {
+            this.rethrowCoreError(error, `crearSolicitudAcceso | org=${organizacionId}`);
+        }
+    }
+
+    async listarSolicitudesAcceso(organizacionId: number, estado?: string): Promise<any[]> {
+        try {
+            const params = estado ? { estado } : {};
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(
+                `/organizacion/${organizacionId}/solicitudes-acceso`,
+                { params },
+            );
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `listarSolicitudesAcceso | org=${organizacionId}`);
+        }
+    }
+
+    async obtenerSolicitudPorToken(token: string): Promise<any | null> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any>>(
+                `/organizacion/solicitud-acceso/${token}`,
+            );
+            return data.data;
+        } catch (error: any) {
+            this.rethrowCoreError(error, `obtenerSolicitudPorToken | token=${token.slice(0, 8)}…`);
+        }
+    }
+
+    async resolverSolicitudAcceso(token: string, payload: {
+        adminUuid: string;
+        decision: 'APROBADA' | 'RECHAZADA';
+        motivoRechazo?: string;
+    }): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/solicitud-acceso/${token}/resolver`,
+                payload,
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `resolverSolicitudAcceso | token=${token.slice(0, 8)}…`);
+        }
+    }
+
+    async cancelarSolicitudAcceso(solicitudId: number, solicitanteUuid: string): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.delete<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/solicitud-acceso/${solicitudId}/cancelar`,
+                { data: { solicitanteUuid } },
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `cancelarSolicitudAcceso | solicitudId=${solicitudId}`);
+        }
+    }
+
+    // ── Admin: Miembros ───────────────────────────────────────────────────────
+
+    async listarMiembrosOrg(organizacionId: number): Promise<any[]> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(
+                `/organizacion/${organizacionId}/miembros`,
+            );
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `listarMiembrosOrg | org=${organizacionId}`);
+        }
+    }
+
+    async cambiarRolMiembro(organizacionId: number, usuarioUuid: string, rolCodigo: string): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.patch<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/${organizacionId}/miembros/${usuarioUuid}/rol`,
+                { rolCodigo },
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `cambiarRolMiembro | org=${organizacionId} user=${usuarioUuid}`);
+        }
+    }
+
+    async removerMiembro(organizacionId: number, usuarioUuid: string): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.delete<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/${organizacionId}/miembros/${usuarioUuid}`,
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `removerMiembro | org=${organizacionId} user=${usuarioUuid}`);
+        }
+    }
+
+    // ── Admin: Grupos ─────────────────────────────────────────────────────────
+
+    async listarGruposOrg(organizacionId: number): Promise<any[]> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any[]>>(
+                `/organizacion/${organizacionId}/grupos`,
+            );
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `listarGruposOrg | org=${organizacionId}`);
+        }
+    }
+
+    async crearGrupoOrg(organizacionId: number, payload: { nombre: string; descripcion?: string; liderUuid: string }): Promise<any> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<any>>(
+                `/organizacion/${organizacionId}/grupos`,
+                payload,
+            );
+            return data.data;
+        } catch (error: any) {
+            this.rethrowCoreError(error, `crearGrupoOrg | org=${organizacionId}`);
+        }
+    }
+
+    async actualizarGrupo(grupoId: string, payload: { nombre: string; descripcion?: string }): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.patch<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/grupos/${grupoId}`,
+                payload,
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `actualizarGrupo | grupo=${grupoId}`);
+        }
+    }
+
+    async eliminarGrupo(grupoId: string): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.delete<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/grupos/${grupoId}`,
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `eliminarGrupo | grupo=${grupoId}`);
+        }
+    }
+
+    async agregarMiembroGrupo(grupoId: string, payload: { usuarioUuid: string; cargoEnGrupo?: string }): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/grupos/${grupoId}/miembros`,
+                payload,
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `agregarMiembroGrupo | grupo=${grupoId}`);
+        }
+    }
+
+    async removerMiembroGrupo(grupoId: string, usuarioUuid: string): Promise<{ ok: boolean }> {
+        try {
+            const { data } = await this.coreClient.delete<ApiResponse<{ ok: boolean }>>(
+                `/organizacion/grupos/${grupoId}/miembros/${usuarioUuid}`,
+            );
+            return data.data as { ok: boolean };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `removerMiembroGrupo | grupo=${grupoId} user=${usuarioUuid}`);
+        }
+    }
+
+    // ── Admin: Enrolamiento ───────────────────────────────────────────────────
+
+    async generarTokenEnrolamiento(
+        organizacionId: number,
+        payload: { adminUuid: string; rolDestino?: string },
+    ): Promise<{ token: string; expiraEn: string }> {
+        try {
+            const { data } = await this.coreClient.post<ApiResponse<{ token: string; expiraEn: string }>>(
+                `/organizacion/${organizacionId}/generar-token-enrolamiento`,
+                payload,
+            );
+            return data.data as { token: string; expiraEn: string };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `generarTokenEnrolamiento | org=${organizacionId}`);
+        }
+    }
+
+    // ── Datos básicos de organización ─────────────────────────────────────────
+
+    async getOrganizacionById(organizacionId: number): Promise<any | null> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<any>>(
+                `/organizacion/${organizacionId}`,
+            );
+            return data.data;
+        } catch (error: any) {
+            if ((error as any)?.response?.status === 404) return null;
+            this.rethrowCoreError(error, `getOrganizacionById | id=${organizacionId}`);
+        }
+    }
+
+    async getRolMiembro(organizacionId: number, usuarioUuid: string): Promise<{ rol: string | null }> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<{ rol: string | null }>>(
+                `/organizacion/${organizacionId}/mi-rol`,
+                { params: { usuarioUuid } },
+            );
+            return data.data as { rol: string | null };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getRolMiembro | org=${organizacionId} user=${usuarioUuid}`);
         }
     }
 

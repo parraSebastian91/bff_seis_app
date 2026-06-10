@@ -4,10 +4,12 @@ export class orgProfile {
     razon_social: string;
     organizacion_uuid: string;
     tipo_participante: string;
+    tipo_organizacion: string;
     constructor() {
         this.razon_social = "";
         this.organizacion_uuid = "";
         this.tipo_participante = "";
+        this.tipo_organizacion = "";
     }
 }
 
@@ -36,6 +38,7 @@ export class UserOrganizacionProfileResponseDTO {
             orgDto.razon_social = org.razon_social;
             orgDto.organizacion_uuid = org.organizacion_uuid;
             orgDto.tipo_participante = org.tipo_participante;
+            orgDto.tipo_organizacion = org.tipo_organizacion;
             return orgDto;
         });
         return dto;
