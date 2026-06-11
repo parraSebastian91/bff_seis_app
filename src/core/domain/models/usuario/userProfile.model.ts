@@ -16,6 +16,8 @@ export class UserProfileModel {
     tipo_documento: string;
     numero_documento: string;
     tipo_contacto: string;
+    /** Roles del sistema asignados al usuario */
+    roles: string[];
 
     constructor(
     ) { 
@@ -34,6 +36,7 @@ export class UserProfileModel {
             this.tipo_documento = "";
             this.numero_documento = "";
             this.tipo_contacto = "";
+            this.roles = [];
     }
 }
 

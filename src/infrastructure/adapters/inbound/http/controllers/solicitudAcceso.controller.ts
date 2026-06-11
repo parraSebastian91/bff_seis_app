@@ -8,6 +8,7 @@ import {
     Logger,
     Param,
     ParseIntPipe,
+    ParseUUIDPipe,
     Post,
     Query,
     Req,
@@ -58,7 +59,7 @@ export class SolicitudAccesoBffController {
      */
     @Post(':id/solicitud-acceso')
     async crear(
-        @Param('id', ParseIntPipe) organizacionUUID: string,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Body() body: CrearSolicitudBffDto,
         @Req() req: Request,
         @Res() res: Response,
@@ -77,7 +78,7 @@ export class SolicitudAccesoBffController {
      */
     @Get(':id/solicitudes-acceso')
     async listar(
-        @Param('id', ParseIntPipe) organizacionUUID: string,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Query('estado') estado: string | undefined,
         @Res() res: Response,
     ) {

@@ -2,7 +2,7 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { Body, Controller, Get, HttpStatus, Inject, Put, Req, Res, UseFilters } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Param, ParseUUIDPipe, Put, Req, Res, UseFilters } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
 import type { IUsuarioUserCase } from '../../../../../core/domain/ports/inbound/UsuarioUseCase.interface';
@@ -73,6 +73,30 @@ export class UsuariosBffController {
         const usuario = await this.usuarioUseCase.ExecuteGetProfileOrganizacionUsuario(userSession["userUuid"]);
 
         return response.status(200).json(new ApiResponse(HttpStatus.OK, "Organizacion del usuario obtenida correctamente", UserOrganizacionProfileResponseDTO.fromModel(usuario)));
+    }
+
+    /** GET /usuario/profile/:uuid — perfil público de cualquier usuario autenticado */
+    @Get("/profile/:uuid")
+    async GetPerfilUsuarioPorUuid(
+        @Param('uuid', ParseUUIDPipe) uuid: string,
+        @Res() response: Response,
+    ) {
+        const usuario = await this.usuarioUseCase.ExecuteGetInformacionUsuario(uuid);
+        return response
+            .status(HttpStatus.OK)
+            .json(new ApiResponse(HttpStatus.OK, 'Perfil del usuario obtenido', UserProfileReqResDTO.builder(usuario)));
+    }
+
+    /** GET /usuario/profile/:uuid/img — imágenes (avatar / banner) de cualquier usuario autenticado */
+    @Get("/profile/:uuid/img")
+    async GetImagenUsuarioPorUuid(
+        @Param('uuid', ParseUUIDPipe) uuid: string,
+        @Res() response: Response,
+    ) {
+        const usuario = await this.usuarioUseCase.ExecuteGetImagenUsuario(uuid);
+        return response
+            .status(HttpStatus.OK)
+            .json(new ApiResponse(HttpStatus.OK, 'Imagen del usuario obtenida', ImageProfileResponseDto.builder(usuario)));
     }
 
 }

@@ -17,6 +17,7 @@ export class UserProfileCoreDTO {
     numero_documento: string;
     avatar: string;
     tipo_contacto: string;
+    roles: string[];
 
     constructor(init?: Partial<UserProfileCoreDTO>) {
         Object.assign(this, init);
@@ -40,6 +41,7 @@ export class UserProfileCoreDTO {
         model.tipo_documento = data.tipo_documento;
         model.numero_documento = data.numero_documento;
         model.tipo_contacto = data.tipo_contacto;
+        model.roles = Array.isArray(data.roles) ? data.roles : [];
         return model;
     }
 }

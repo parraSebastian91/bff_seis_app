@@ -70,6 +70,7 @@ export class UserProfileReqResDTO {
     rrss: RedesSociales[];
     telefono: string;
     ubicacion: string;
+    roles: string[];
 
     constructor() { 
         this.username = "";
@@ -80,6 +81,7 @@ export class UserProfileReqResDTO {
         this.rrss = [];
         this.telefono = "";
         this.ubicacion = "";
+        this.roles = [];
     }
 
 
@@ -93,7 +95,8 @@ export class UserProfileReqResDTO {
         dto.datosContacto = new DatosContacto(model);
         dto.rrss = RedesSociales.fromJsonBject(model);
         dto.telefono = model.celular;
-        dto.ubicacion = model.direccion
+        dto.ubicacion = model.direccion;
+        dto.roles = model.roles ?? [];
         return dto;
     }
 
