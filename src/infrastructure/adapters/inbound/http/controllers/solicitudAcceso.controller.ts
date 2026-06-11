@@ -58,14 +58,14 @@ export class SolicitudAccesoBffController {
      */
     @Post(':id/solicitud-acceso')
     async crear(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseIntPipe) organizacionUUID: string,
         @Body() body: CrearSolicitudBffDto,
         @Req() req: Request,
         @Res() res: Response,
     ) {
         const cid = req['correlationId'] ?? crypto.randomUUID();
-        this.logger.log(`[POST] solicitud-acceso org=${organizacionId} user=${body.solicitanteUuid} cid=${cid}`);
-        const result = await this.geoUseCase.crearSolicitudAcceso(organizacionId, body);
+        this.logger.log(`[POST] solicitud-acceso org=${organizacionUUID} user=${body.solicitanteUuid} cid=${cid}`);
+        const result = await this.geoUseCase.crearSolicitudAcceso(organizacionUUID, body);
         return res.status(HttpStatus.CREATED).json(
             new ApiResponse(HttpStatus.CREATED, 'Solicitud enviada. El administrador debe aprobarla.', result),
         );
@@ -77,12 +77,12 @@ export class SolicitudAccesoBffController {
      */
     @Get(':id/solicitudes-acceso')
     async listar(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseIntPipe) organizacionUUID: string,
         @Query('estado') estado: string | undefined,
         @Res() res: Response,
     ) {
-        this.logger.log(`[GET] solicitudes-acceso org=${organizacionId} estado=${estado ?? 'all'}`);
-        const data = await this.geoUseCase.listarSolicitudesAcceso(organizacionId, estado);
+        this.logger.log(`[GET] solicitudes-acceso org=${organizacionUUID} estado=${estado ?? 'all'}`);
+        const data = await this.geoUseCase.listarSolicitudesAcceso(organizacionUUID, estado);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Solicitudes obtenidas', data),
         );

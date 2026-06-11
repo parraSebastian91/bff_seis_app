@@ -40,16 +40,16 @@ export class GeoCatalogoUseCase {
 
     // ── Solicitudes de acceso ──────────────────────────────────────────────
 
-    crearSolicitudAcceso(organizacionId: number, payload: {
+    crearSolicitudAcceso(organizacionUUID: string, payload: {
         solicitanteUuid: string;
         rolSolicitado?: string;
         mensaje?: string;
     }) {
-        return this.coreService.crearSolicitudAcceso(organizacionId, payload);
+        return this.coreService.crearSolicitudAcceso(organizacionUUID, payload);
     }
 
-    listarSolicitudesAcceso(organizacionId: number, estado?: string) {
-        return this.coreService.listarSolicitudesAcceso(organizacionId, estado);
+    listarSolicitudesAcceso(organizacionUUID: string, estado?: string) {
+        return this.coreService.listarSolicitudesAcceso(organizacionUUID, estado);
     }
 
     obtenerSolicitudPorToken(token: string) {
@@ -78,26 +78,26 @@ export class GeoCatalogoUseCase {
 
     // ── Admin: Miembros ───────────────────────────────────────────────────────
 
-    listarMiembrosOrg(organizacionId: number) {
-        return this.coreService.listarMiembrosOrg(organizacionId);
+    listarMiembrosOrg(organizacionUUID: string) {
+        return this.coreService.listarMiembrosOrg(organizacionUUID);
     }
 
-    cambiarRolMiembro(organizacionId: number, usuarioUuid: string, rolCodigo: string) {
-        return this.coreService.cambiarRolMiembro(organizacionId, usuarioUuid, rolCodigo);
+    cambiarRolMiembro(organizacionUUID: string, usuarioUuid: string, rolCodigo: string) {
+        return this.coreService.cambiarRolMiembro(organizacionUUID, usuarioUuid, rolCodigo);
     }
 
-    removerMiembro(organizacionId: number, usuarioUuid: string) {
-        return this.coreService.removerMiembro(organizacionId, usuarioUuid);
+    removerMiembro(organizacionUUID: string, usuarioUuid: string) {
+        return this.coreService.removerMiembro(organizacionUUID, usuarioUuid);
     }
 
     // ── Admin: Grupos ─────────────────────────────────────────────────────────
 
-    listarGruposOrg(organizacionId: number) {
-        return this.coreService.listarGruposOrg(organizacionId);
+    listarGruposOrg(organizacionUUID: string) {
+        return this.coreService.listarGruposOrg(organizacionUUID);
     }
 
-    crearGrupoOrg(organizacionId: number, payload: { nombre: string; descripcion?: string; liderUuid: string }) {
-        return this.coreService.crearGrupoOrg(organizacionId, payload);
+    crearGrupoOrg(organizacionUUID: string, payload: { nombre: string; descripcion?: string; liderUuid: string }) {
+        return this.coreService.crearGrupoOrg(organizacionUUID, payload);
     }
 
     actualizarGrupo(grupoId: string, payload: { nombre: string; descripcion?: string }) {
@@ -118,17 +118,17 @@ export class GeoCatalogoUseCase {
 
     // ── Admin: Enrolamiento ───────────────────────────────────────────────────
 
-    generarTokenEnrolamiento(organizacionId: number, payload: { adminUuid: string; rolDestino?: string }) {
-        return this.coreService.generarTokenEnrolamiento(organizacionId, payload);
+    generarTokenEnrolamiento(organizacionUUID: string, payload: { adminUuid: string; rolDestino?: string }) {
+        return this.coreService.generarTokenEnrolamiento(organizacionUUID, payload);
     }
 
     // ── Datos básicos de organización ─────────────────────────────────────────
 
-    getOrganizacionById(organizacionId: number) {
-        return this.coreService.getOrganizacionById(organizacionId);
+    getOrganizacionById(organizacionUUID: string) {
+        return this.coreService.getOrganizacionById(organizacionUUID);
     }
 
-    getRolMiembro(organizacionId: number, usuarioUuid: string) {
-        return this.coreService.getRolMiembro(organizacionId, usuarioUuid);
+    getRolMiembro(organizacionUUID: string, usuarioUuid: string) {
+        return this.coreService.getRolMiembro(organizacionUUID, usuarioUuid);
     }
 }

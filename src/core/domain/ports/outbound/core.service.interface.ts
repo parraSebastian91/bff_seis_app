@@ -44,12 +44,12 @@ export interface ICoreService {
         giro?: string;
     }): Promise<{ id: number; uuid: string; razonSocial: string; tipoPersona: string; tipoParticipacion: string; rut: string; dv: string }>;
     /** Obtiene datos básicos de una organización por BIGINT id */
-    getOrganizacionById(organizacionId: number): Promise<{ id: number; razonSocial: string; descripcion: string | null; logoUrl: string | null; rut: string; dv: string } | null>;
+    getOrganizacionById(organizacionUUID: string): Promise<{ id: number; razonSocial: string; descripcion: string | null; logoUrl: string | null; rut: string; dv: string } | null>;
 
     /** Retorna el rol del usuario en la organización, o null si no es miembro */
-    getRolMiembro(organizacionId: number, usuarioUuid: string): Promise<{ rol: string | null }>;
+    getRolMiembro(organizacionUUID: string, usuarioUuid: string): Promise<{ rol: string | null }>;
     // ── Solicitudes de acceso ────────────────────────────────────────────
-    crearSolicitudAcceso(organizacionId: number, payload: {
+    crearSolicitudAcceso(organizacionUUID: string, payload: {
         solicitanteUuid: string;
         rolSolicitado?: string;
         mensaje?: string;
@@ -62,7 +62,7 @@ export interface ICoreService {
         mensaje?: string;
     }): Promise<{ solicitudId: number; token: string; expiraEn: string }>;
 
-    listarSolicitudesAcceso(organizacionId: number, estado?: string): Promise<any[]>;
+    listarSolicitudesAcceso(organizacionUUID: string, estado?: string): Promise<any[]>;
 
     obtenerSolicitudPorToken(token: string): Promise<any | null>;
 
@@ -75,20 +75,20 @@ export interface ICoreService {
     cancelarSolicitudAcceso(solicitudId: number, solicitanteUuid: string): Promise<{ ok: boolean }>;
 
     // ── Admin: Miembros de organización ─────────────────────────────────────
-    listarMiembrosOrg(organizacionId: number): Promise<any[]>;
-    cambiarRolMiembro(organizacionId: number, usuarioUuid: string, rolCodigo: string): Promise<{ ok: boolean }>;
-    removerMiembro(organizacionId: number, usuarioUuid: string): Promise<{ ok: boolean }>;
+    listarMiembrosOrg(organizacionUUID: string): Promise<any[]>;
+    cambiarRolMiembro(organizacionUUID: string, usuarioUuid: string, rolCodigo: string): Promise<{ ok: boolean }>;
+    removerMiembro(organizacionUUID: string, usuarioUuid: string): Promise<{ ok: boolean }>;
 
     // ── Admin: Grupos de trabajo ────────────────────────────────────────────
-    listarGruposOrg(organizacionId: number): Promise<any[]>;
-    crearGrupoOrg(organizacionId: number, payload: { nombre: string; descripcion?: string; liderUuid: string }): Promise<any>;
+    listarGruposOrg(organizacionUUID: string): Promise<any[]>;
+    crearGrupoOrg(organizacionUUID: string, payload: { nombre: string; descripcion?: string; liderUuid: string }): Promise<any>;
     actualizarGrupo(grupoId: string, payload: { nombre: string; descripcion?: string }): Promise<{ ok: boolean }>;
     eliminarGrupo(grupoId: string): Promise<{ ok: boolean }>;
     agregarMiembroGrupo(grupoId: string, payload: { usuarioUuid: string; cargoEnGrupo?: string }): Promise<{ ok: boolean }>;
     removerMiembroGrupo(grupoId: string, usuarioUuid: string): Promise<{ ok: boolean }>;
 
     // ── Admin: Enrolamiento ─────────────────────────────────────────────────
-    generarTokenEnrolamiento(organizacionId: number, payload: { adminUuid: string; rolDestino?: string }): Promise<{ token: string; expiraEn: string }>;
+    generarTokenEnrolamiento(organizacionUUID: string, payload: { adminUuid: string; rolDestino?: string }): Promise<{ token: string; expiraEn: string }>;
 
     // ── Verificación tributaria ─────────────────────────────────────────
     /** Persiste en ms-core la respuesta cruda ya normalizada del organismo tributario */

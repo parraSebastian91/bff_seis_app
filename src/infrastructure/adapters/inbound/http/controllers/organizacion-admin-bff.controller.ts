@@ -51,7 +51,7 @@ class GenerarTokenBffDto {
  * Ruta base: /api/bff/organizacion/:id/admin/...
  *
  * Requiere autenticación (guard global del BFF).
- * El cliente debe pasar el organizacionId (BIGINT) en la URL,
+ * El cliente debe pasar el organizacionUUID (UUID) en la URL,
  * tal como se usa en el resto del módulo de organización.
  */
 @Controller('organizacion')
@@ -70,11 +70,11 @@ export class OrganizacionAdminBffController {
     /** GET /api/bff/organizacion/:id */
     @Get(':id')
     async getOrganizacion(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Res() res: Response,
     ) {
-        this.logger.log(`[GET] organizacion id=${organizacionId}`);
-        const data = await this.geo.getOrganizacionById(organizacionId);
+        this.logger.log(`[GET] organizacion id=${organizacionUUID}`);
+        const data = await this.geo.getOrganizacionById(organizacionUUID);
         if (!data) {
             return res.status(HttpStatus.NOT_FOUND).json(
                 new ApiResponse(HttpStatus.NOT_FOUND, 'Organización no encontrada', null),
@@ -88,18 +88,18 @@ export class OrganizacionAdminBffController {
     /** GET /api/bff/organizacion/:id/mi-rol — extrae el userUuid del JWT */
     @Get(':id/mi-rol')
     async getMiRol(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Req() req: Request,
         @Res() res: Response,
     ) {
         const usuarioUuid: string = (req as any)['user']?.['userUuid'] ?? (req as any)['user']?.['sub'];
-        this.logger.log(`[GET] mi-rol org=${organizacionId} user=${usuarioUuid}`);
+        this.logger.log(`[GET] mi-rol org=${organizacionUUID} user=${usuarioUuid}`);
         if (!usuarioUuid) {
             return res.status(HttpStatus.UNAUTHORIZED).json(
                 new ApiResponse(HttpStatus.UNAUTHORIZED, 'Usuario no identificado en token', null),
             );
         }
-        const result = await this.geo.getRolMiembro(organizacionId, usuarioUuid);
+        const result = await this.geo.getRolMiembro(organizacionUUID, usuarioUuid);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Rol obtenido', result),
         );
@@ -110,11 +110,11 @@ export class OrganizacionAdminBffController {
     /** GET /api/bff/organizacion/:id/miembros */
     @Get(':id/miembros')
     async listarMiembros(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Res() res: Response,
     ) {
-        this.logger.log(`[GET] miembros org=${organizacionId}`);
-        const data = await this.geo.listarMiembrosOrg(organizacionId);
+        this.logger.log(`[GET] miembros org=${organizacionUUID}`);
+        const data = await this.geo.listarMiembrosOrg(organizacionUUID);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Miembros obtenidos', data),
         );
@@ -123,13 +123,13 @@ export class OrganizacionAdminBffController {
     /** PATCH /api/bff/organizacion/:id/miembros/:uuid/rol */
     @Patch(':id/miembros/:uuid/rol')
     async cambiarRol(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Param('uuid', ParseUUIDPipe) usuarioUuid: string,
         @Body() body: CambiarRolBffDto,
         @Res() res: Response,
     ) {
-        this.logger.log(`[PATCH] cambiarRol org=${organizacionId} user=${usuarioUuid} rol=${body.rolCodigo}`);
-        const result = await this.geo.cambiarRolMiembro(organizacionId, usuarioUuid, body.rolCodigo);
+        this.logger.log(`[PATCH] cambiarRol org=${organizacionUUID} user=${usuarioUuid} rol=${body.rolCodigo}`);
+        const result = await this.geo.cambiarRolMiembro(organizacionUUID, usuarioUuid, body.rolCodigo);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Rol actualizado', result),
         );
@@ -138,12 +138,12 @@ export class OrganizacionAdminBffController {
     /** DELETE /api/bff/organizacion/:id/miembros/:uuid */
     @Delete(':id/miembros/:uuid')
     async removerMiembro(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Param('uuid', ParseUUIDPipe) usuarioUuid: string,
         @Res() res: Response,
     ) {
-        this.logger.log(`[DELETE] removerMiembro org=${organizacionId} user=${usuarioUuid}`);
-        const result = await this.geo.removerMiembro(organizacionId, usuarioUuid);
+        this.logger.log(`[DELETE] removerMiembro org=${organizacionUUID} user=${usuarioUuid}`);
+        const result = await this.geo.removerMiembro(organizacionUUID, usuarioUuid);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Miembro removido', result),
         );
@@ -154,11 +154,11 @@ export class OrganizacionAdminBffController {
     /** GET /api/bff/organizacion/:id/grupos */
     @Get(':id/grupos')
     async listarGrupos(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Res() res: Response,
     ) {
-        this.logger.log(`[GET] grupos org=${organizacionId}`);
-        const data = await this.geo.listarGruposOrg(organizacionId);
+        this.logger.log(`[GET] grupos org=${organizacionUUID}`);
+        const data = await this.geo.listarGruposOrg(organizacionUUID);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Grupos obtenidos', data),
         );
@@ -167,12 +167,12 @@ export class OrganizacionAdminBffController {
     /** POST /api/bff/organizacion/:id/grupos */
     @Post(':id/grupos')
     async crearGrupo(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Body() body: CrearGrupoBffDto,
         @Res() res: Response,
     ) {
-        this.logger.log(`[POST] crearGrupo org=${organizacionId} nombre=${body.nombre}`);
-        const result = await this.geo.crearGrupoOrg(organizacionId, body);
+        this.logger.log(`[POST] crearGrupo org=${organizacionUUID} nombre=${body.nombre}`);
+        const result = await this.geo.crearGrupoOrg(organizacionUUID, body);
         return res.status(HttpStatus.CREATED).json(
             new ApiResponse(HttpStatus.CREATED, 'Grupo creado', result),
         );
@@ -238,12 +238,12 @@ export class OrganizacionAdminBffController {
     /** POST /api/bff/organizacion/:id/generar-token-enrolamiento */
     @Post(':id/generar-token-enrolamiento')
     async generarToken(
-        @Param('id', ParseIntPipe) organizacionId: number,
+        @Param('id', ParseUUIDPipe) organizacionUUID: string,
         @Body() body: GenerarTokenBffDto,
         @Res() res: Response,
     ) {
-        this.logger.log(`[POST] generarToken org=${organizacionId} admin=${body.adminUuid}`);
-        const result = await this.geo.generarTokenEnrolamiento(organizacionId, body);
+        this.logger.log(`[POST] generarToken org=${organizacionUUID} admin=${body.adminUuid}`);
+        const result = await this.geo.generarTokenEnrolamiento(organizacionUUID, body);
         return res.status(HttpStatus.CREATED).json(
             new ApiResponse(HttpStatus.CREATED, 'Token de enrolamiento generado', result),
         );
