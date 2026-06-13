@@ -4,6 +4,7 @@ import {
     HttpStatus,
     Inject,
     Logger,
+    Param,
     ParseIntPipe,
     Query,
     Res,
@@ -95,6 +96,18 @@ export class GeoController {
         const data = await this.geoUseCase.getProductosFinancieros(tipoOrg);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Productos financieros obtenidos', data),
+        );
+    }
+
+    @Get('media-category/:mediaType')
+    async getMediaCategory(
+        @Param('mediaType') mediaType: string,
+        @Res() res: Response,
+    ) {
+        this.logger.log(`[GET] media-category mediaType=${mediaType}`);
+        const data = await this.geoUseCase.getMediaCategory(mediaType);
+        return res.status(HttpStatus.OK).json(
+            new ApiResponse(HttpStatus.OK, 'Media category obtenida', data),
         );
     }
 }

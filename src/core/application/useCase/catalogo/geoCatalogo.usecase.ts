@@ -131,4 +131,10 @@ export class GeoCatalogoUseCase {
     getRolMiembro(organizacionUUID: string, usuarioUuid: string) {
         return this.coreService.getRolMiembro(organizacionUUID, usuarioUuid);
     }
+
+    // Obtencion de Catalogos de MEDIA schema
+
+    getMediaCategory(mediaType: string) {
+        return this.coreService.getMediaCategory(mediaType);
+    }
 }

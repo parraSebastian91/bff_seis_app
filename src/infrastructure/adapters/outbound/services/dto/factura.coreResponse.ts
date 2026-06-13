@@ -1,5 +1,38 @@
 import { createdBy, facturaEstado } from "src/core/domain/models/constantes.model";
-import { FacturaModel } from "src/core/domain/models/factura.model";
+import { AdjuntoModel, FacturaModel } from "src/core/domain/models/factura.model";
+
+export class AdjuntoCoreResponse {
+    id: string;
+    tipo: string;
+    orden: number;
+    asset_id: string;
+    url_path: string;
+    descripcion: string;
+    es_principal: boolean;
+
+    constructor(id: string, tipo: string, orden: number, asset_id: string, url_path: string, descripcion: string, es_principal: boolean) {
+        this.id = id;
+        this.tipo = tipo;
+        this.orden = orden;
+        this.asset_id = asset_id;
+        this.url_path = url_path;
+        this.descripcion = descripcion;
+        this.es_principal = es_principal;
+    }
+
+    static toModel(data: AdjuntoCoreResponse): AdjuntoModel {
+        return new AdjuntoModel(
+            data.id,
+            data.tipo,
+            data.orden,
+            data.asset_id,
+            data.url_path,
+            data.descripcion,
+            data.es_principal
+        );
+    }
+}
+
 
 export class FacturaCoreResponse {
     publiInvoiceId: string;
@@ -26,6 +59,8 @@ export class FacturaCoreResponse {
     url_factura: string | null;    
     createdBy: createdBy;
     notas?: string[];
+    adjuntos?: AdjuntoCoreResponse[];
+
     constructor(ownerUUID: string, gestor: { uuid: string, username: string }, status: facturaEstado, correlationId: string) {
         this.publiInvoiceId = "";
         this.assetId = "";
@@ -74,6 +109,7 @@ export class FacturaCoreResponse {
         factura.url_factura = data.url_factura;
         factura.createdBy = data.createdBy;
         factura.notas = data.notas;
+        factura.adjuntos = data.adjuntos?.map(AdjuntoCoreResponse.toModel);
         return factura;
     }
 

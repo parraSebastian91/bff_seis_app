@@ -178,7 +178,8 @@ export class CoreServiceClientAdapter implements ICoreService {
         ipAddress: string;
         userAgent: string;
         correlationId: string;
-    }): Promise<void> {4 
+    }): Promise<void> {
+        4
         try {
             await this.coreClient.post<ApiResponse<void>>(`/factura/autorizacion`, payload);
         } catch (error: any) {
@@ -522,6 +523,18 @@ export class CoreServiceClientAdapter implements ICoreService {
             return data.data as { rol: string | null };
         } catch (error: any) {
             this.rethrowCoreError(error, `getRolMiembro | org=${organizacionUUID} user=${usuarioUuid}`);
+        }
+    }
+
+    async getMediaCategory(mediaType: string): Promise<{ codigo: number; nombre: string }[]> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<{ codigo: number; nombre: string }[]>>(
+                `/catalogo/media-category`,
+                { params: { mediaType } },
+            );
+            return data.data as any[];
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getMediaCategory | mediaType=${mediaType}`);
         }
     }
 

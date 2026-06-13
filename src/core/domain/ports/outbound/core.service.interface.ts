@@ -97,4 +97,8 @@ export interface ICoreService {
         rawResponse: Record<string, any>;
         fuente: string;
     }): Promise<{ id: number }>;
+
+    // Catalogos de MEDIA schema
+    getMediaCategory(mediaType: string): Promise<any[]>;
+
 }

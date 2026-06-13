@@ -1,5 +1,25 @@
 import { createdBy, facturaEstado } from "./constantes.model";
 
+export class AdjuntoModel {
+    id: string;
+    tipo: string;
+    orden: number;
+    asset_id: string;
+    url_path: string;
+    descripcion: string;
+    es_principal: boolean;
+
+    constructor(id: string, tipo: string, orden: number, asset_id: string, url_path: string, descripcion: string, es_principal: boolean) {
+        this.id = id;
+        this.tipo = tipo;
+        this.orden = orden;
+        this.asset_id = asset_id;
+        this.url_path = url_path;
+        this.descripcion = descripcion;
+        this.es_principal = es_principal;
+    }
+}
+
 export class FacturaModel {
     facturaId: string;
     assetId: string;
@@ -8,6 +28,7 @@ export class FacturaModel {
         uuid: string;
         username: string;
     };
+    adjuntos?: AdjuntoModel[];
     nombre_cliente_cedente: string; // deudor_nombre
     rut_cliente_cedente: string; // deudor_rut
     deudorNombre: string;
@@ -47,6 +68,7 @@ export class FacturaModel {
         this.ofertas_rechazadas = 0;
         this.createdBy = createdBy.FORM;
         this.notas = [];
+        this.adjuntos = [];
     }
 
 }
