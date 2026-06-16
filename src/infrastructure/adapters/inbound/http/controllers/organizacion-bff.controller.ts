@@ -36,7 +36,7 @@ export class OrganizacionBffController {
     ) { }
 
     /**
-    * POST /api/organizations
+    * POST /api/organizacion
     * Crea el registro base de una organización y retorna { id, uuid }.
     * Idempotente: si el RUT ya existe, retorna el registro existente.
     *
@@ -49,7 +49,7 @@ export class OrganizacionBffController {
         @Res() res: Response,
     ) {
         const correlationId = req['correlationId'] ?? crypto.randomUUID();
-        this.logger.log(`[POST] organizations | rut=${body.rut} razonSocial=${body.razonSocial} cid=${correlationId}`);
+        this.logger.log(`[POST] organizacion | rut=${body.rut} razonSocial=${body.razonSocial} cid=${correlationId}`);
 
         const result = await this.organizacion.crearOrganizacion(body);
 

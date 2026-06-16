@@ -25,10 +25,11 @@ export class FacturasController {
         private readonly marketplaceSseService: MarketplaceSseService,
     ) { }
 
-    @Get("list/:organizacionUUID")
+    @Get("list/:organizacionUUID/:filtro")
     @Roles("USR_STD")
     async getFacturas(
         @Param("organizacionUUID") organizacionUUID: string,
+        @Param("filtro") filtro: string,
         @Req() req: Request,
         @Res() res: Response
     ): Promise<any> {
@@ -36,7 +37,7 @@ export class FacturasController {
         const correlationId = req["correlationId"];
         const userSession = req["user"];
         this.logger.debug(`[START] getFacturas - CorrelationID: ${correlationId}`);
-        const facturas = await this.facturaUseCase.ExecuteGetFacturas(userSession["userUuid"], organizacionUUID, correlationId);
+        const facturas = await this.facturaUseCase.ExecuteGetFacturas(userSession["userUuid"], organizacionUUID, correlationId, filtro);
         const endedAt = Date.now();
         this.logger.debug(`[END] getFacturas - CorrelationID: ${correlationId}, Duration: ${endedAt - startedAt}ms`);
         return res.status(HttpStatus.OK).json(new ApiResponse(HttpStatus.OK, "Extracción exitosa", facturas));

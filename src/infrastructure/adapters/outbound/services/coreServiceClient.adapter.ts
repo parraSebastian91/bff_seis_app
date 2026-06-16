@@ -114,14 +114,13 @@ export class CoreServiceClientAdapter implements ICoreService {
         }
     }
 
-    async getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<FacturaModel[]> {
-        const startedAt = Date.now();
+    async getFacturasByUserUUID(uuid: string, organizacionUUID: string, filtro: string): Promise<FacturaModel[]> {
         try {
-            const { data } = await this.coreClient.get<ApiResponse<FacturaCoreResponse[]>>(`/factura/list/${uuid}/${organizacionUUID}`);
+            const { data } = await this.coreClient.get<ApiResponse<FacturaCoreResponse[]>>(`/factura/list/${uuid}/${organizacionUUID}/${filtro}`);
             return (data.data as FacturaCoreResponse[]).map(FacturaCoreResponse.toModel);
         }
         catch (error: any) {
-            this.rethrowCoreError(error, `getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID}`);
+            this.rethrowCoreError(error, `getFacturasByUserUUID | userUuid=${uuid} | organizacionUUID=${organizacionUUID} | filtro=${filtro}`);
         }
     }
 

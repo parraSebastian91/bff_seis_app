@@ -19,7 +19,7 @@ export interface ICoreService {
     GetUserImage(uuid: string): Promise<UserImagesModel>;
     UpdateUserProfile(uuid: string, body: UserProfileModel): Promise<UserProfileModel>;
     GetUserOrganizacionProfile(uuid: string): Promise<UserOrganizacionProfileModel>;
-    getFacturasByUserUUID(uuid: string, organizacionUUID: string): Promise<FacturaModel[]>;
+    getFacturasByUserUUID(uuid: string, organizacionUUID: string, filtro: string): Promise<FacturaModel[]>;
     updateFactura(body: FacturaUpdateRequestDto): Promise<{ campo: string, id: string, valor: any, isUpdate: any, mensaje: string }>;
     publicarFactura(body: FacturaCreateRequestDto): Promise<FacturaModel>;
     getUrlFactura(facturas: FacturaModel[], userUUID: string, organizacionUUID: string, correlationId: string): Promise<{ id: string, keyUrl: string }[]>;

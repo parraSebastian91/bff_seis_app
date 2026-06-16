@@ -60,9 +60,9 @@ class GenerarTokenBffDto {
 
 /**
  * Endpoints de solicitudes de acceso a organizaciones.
- * Ruta base: /organizations/:id/...  (plural, nomenclatura frontend)
+ * Ruta base: /organizacion/:id/...  (plural, nomenclatura frontend)
  */
-@Controller('organizations')
+@Controller('organizacion')
 @UseFilters(ErrorHandler)
 export class SolicitudAccesoBffController {
 
@@ -74,7 +74,7 @@ export class SolicitudAccesoBffController {
     ) { }
 
     /**
-     * POST /api/organizations/:id/solicitud-acceso
+     * POST /api/organizacion/:id/solicitud-acceso
      * El colaborador solicita unirse a una organización.
      *
      * Body: { solicitanteUuid, rolSolicitado?, mensaje? }
@@ -95,7 +95,7 @@ export class SolicitudAccesoBffController {
     }
 
     /**
-     * GET /api/organizations/:id/solicitudes-acceso?estado=PENDIENTE
+     * GET /api/organizacion/:id/solicitudes-acceso?estado=PENDIENTE
      * Panel del admin — lista solicitudes de su organización.
      */
     @Get(':id/solicitudes-acceso')
@@ -112,7 +112,7 @@ export class SolicitudAccesoBffController {
     }
 
     /**
-     * GET /api/organizations/solicitud-acceso/:token
+     * GET /api/organizacion/solicitud-acceso/:token
      * Resuelve una solicitud por su token (abre el link del email).
      * Público — no requiere sesión.
      */
@@ -135,7 +135,7 @@ export class SolicitudAccesoBffController {
     }
 
     /**
-     * POST /api/organizations/solicitud-acceso/:token/resolver
+     * POST /api/organizacion/solicitud-acceso/:token/resolver
      * Admin aprueba o rechaza (desde el panel o desde el link de email).
      *
      * Body: { adminUuid, decision: "APROBADA"|"RECHAZADA", motivoRechazo? }
@@ -157,7 +157,7 @@ export class SolicitudAccesoBffController {
     }
 
     /**
-     * DELETE /api/organizations/solicitud-acceso/:id/cancelar
+     * DELETE /api/organizacion/solicitud-acceso/:id/cancelar
      * El colaborador cancela su propia solicitud pendiente.
      *
      * Body: { solicitanteUuid }

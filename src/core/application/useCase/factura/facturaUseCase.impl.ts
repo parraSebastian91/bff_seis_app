@@ -20,12 +20,12 @@ export class FacturaUseCaseImpl implements IFacturaUseCase {
         private readonly storageService: IStorageService,
     ) { }
 
-    async ExecuteGetFacturas(userUUID: string, organizacionUUID: string, correlationId: string): Promise<FacturaModel[]> {
+    async ExecuteGetFacturas(userUUID: string, organizacionUUID: string, correlationId: string, filtro: string): Promise<FacturaModel[]> {
         const startedAt = Date.now();
-        this.logger.log(`[START] GetFacturas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId}`);
+        this.logger.log(`[START] GetFacturas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId} | filtro=${filtro}`);
 
         try {
-            const facturas = await this.facturaCoreService.getFacturasByUserUUID(userUUID, organizacionUUID);
+            const facturas = await this.facturaCoreService.getFacturasByUserUUID(userUUID, organizacionUUID, filtro);
             const facturasConStorageKey = facturas.filter((factura) => factura.assetId);
 
             if (facturasConStorageKey.length === 0) {
