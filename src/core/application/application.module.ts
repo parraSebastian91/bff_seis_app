@@ -19,8 +19,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { FacturaUseCaseImpl } from './useCase/factura/facturaUseCase.impl';
 import { FacturaMarketPlaceUseCase } from './useCase/marketPlace/facturaMarketPlace.usecase.impl';
 import { TerminosUseCaseImpl } from './useCase/terminos/terminosUseCase.impl';
-import { GeoCatalogoUseCase } from './useCase/catalogo/geoCatalogo.usecase';
-import { VerificacionTributariaUseCase } from './useCase/catalogo/verificacionTributaria.usecase';
+import { CatalogoUseCase } from './useCase/catalogo/catalogo.usecase';
+import { AdministracionAccesoOrganizacionUseCase } from './useCase/organizacion/AdmAccesoOrg.usecase';
+import { AdministracionGrupoTrabajo } from './useCase/organizacion/AdmGrupoTrabajo.usecase';
+import { OrganizacionUseCase } from './useCase/organizacion/organizacion.usecase';
 
 export type ApplicationModuleOptions = {
     modules: any[];
@@ -41,8 +43,10 @@ export const NOTIFICATION_USE_CASE = 'NOTIFICATION_USE_CASE';
 export const FACTURA_USE_CASE = 'FACTURA_USE_CASE';
 export const FACTURA_MARKETPLACE_USE_CASE = 'FACTURA_MARKETPLACE_USE_CASE';
 export const TERMINOS_USE_CASE = 'TERMINOS_USE_CASE';
-export const GEO_USE_CASE = 'GEO_USE_CASE';
-export const VERIFICACION_TRIBUTARIA_USE_CASE = 'VERIFICACION_TRIBUTARIA_USE_CASE';
+export const CATALOGO_USE_CASE = 'CATALOGO_USE_CASE';
+export const ADM_ACCESO_ORG_USE_CASE = 'ADM_ACCESO_ORG_USE_CASE';
+export const ADM_GRUPOS_ORG_USE_CASE = 'ADM_GRUPOS_ORG_USE_CASE';
+export const ORGANIZACION_USE_CASE = 'ORGANIZACION_USE_CASE';
 
 
 @Module({})
@@ -149,19 +153,35 @@ export class ApplicationModule {
             }
         }
 
-        const GeoCatalogoUseCaseProvider = {
-            provide: GEO_USE_CASE,
+        const CatalogoUseCaseProvider = {
+            provide: CATALOGO_USE_CASE,
             inject: [coreServiceClientAdapter],
             useFactory(coreServiceClient: ICoreService) {
-                return new GeoCatalogoUseCase(coreServiceClient);
+                return new CatalogoUseCase(coreServiceClient);
             }
         }
 
-        const VerificacionTributariaUseCaseProvider = {
-            provide: VERIFICACION_TRIBUTARIA_USE_CASE,
+        const AdmAccesoOrgUseCaseProvider = {
+            provide: ADM_ACCESO_ORG_USE_CASE,
             inject: [coreServiceClientAdapter],
             useFactory(coreServiceClient: ICoreService) {
-                return new VerificacionTributariaUseCase(coreServiceClient);
+                return new AdministracionAccesoOrganizacionUseCase(coreServiceClient);
+            }
+        }
+
+        const AdmGruposOrgUseCaseProvider = {
+            provide: ADM_GRUPOS_ORG_USE_CASE,
+            inject: [coreServiceClientAdapter],
+            useFactory(coreServiceClient: ICoreService) {
+                return new AdministracionGrupoTrabajo(coreServiceClient);
+            }
+        }
+
+        const OrganizacionUseCaseProvider = {
+            provide: ORGANIZACION_USE_CASE,
+            inject: [coreServiceClientAdapter],
+            useFactory(coreServiceClient: ICoreService) {
+                return new OrganizacionUseCase(coreServiceClient);
             }
         }
 
@@ -191,9 +211,10 @@ export class ApplicationModule {
                 FacturasUseCaseProvider,
                 FacturaMarketplaceUseCaseProvider,
                 TerminosUseCaseProvider,
-                GeoCatalogoUseCaseProvider,
-                VerificacionTributariaUseCaseProvider,
-
+                CatalogoUseCaseProvider,
+                AdmAccesoOrgUseCaseProvider,
+                AdmGruposOrgUseCaseProvider,
+                OrganizacionUseCaseProvider,
             ],
             exports: [
                 AUTH_USE_CASE,
@@ -204,8 +225,10 @@ export class ApplicationModule {
                 FACTURA_USE_CASE,
                 FACTURA_MARKETPLACE_USE_CASE,
                 TERMINOS_USE_CASE,
-                GEO_USE_CASE,
-                VERIFICACION_TRIBUTARIA_USE_CASE,
+                CATALOGO_USE_CASE,
+                ADM_ACCESO_ORG_USE_CASE,
+                ADM_GRUPOS_ORG_USE_CASE,
+                ORGANIZACION_USE_CASE,
             ],
         };
     }

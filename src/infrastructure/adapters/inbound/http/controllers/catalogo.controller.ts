@@ -11,11 +11,11 @@ import {
     UseFilters,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { GEO_USE_CASE } from 'src/core/application/application.module';
-import type { GeoCatalogoUseCase } from 'src/core/application/useCase/catalogo/geoCatalogo.usecase';
 import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
 import { ApiResponse } from '../model/api-response.model';
 import { Public } from '../decorators/public.decorator';
+import type { ICatalogo } from 'src/core/domain/ports/inbound/catalogo.interface';
+import { CATALOGO_USE_CASE } from 'src/core/application/application.module';
 
 /**
  * Proxy de catálogo geográfico y financiero.
@@ -30,13 +30,13 @@ import { Public } from '../decorators/public.decorator';
 @Controller('catalogo')
 @UseFilters(ErrorHandler)
 @Public()
-export class GeoController {
+export class CatalogoController {
 
-    private readonly logger = new Logger(GeoController.name);
+    private readonly logger = new Logger(CatalogoController.name);
 
     constructor(
-        @Inject(GEO_USE_CASE)
-        private readonly geoUseCase: GeoCatalogoUseCase,
+        @Inject(CATALOGO_USE_CASE)
+        private readonly catalogo: ICatalogo,
     ) { }
 
     @Get('geo/regiones')
@@ -45,7 +45,7 @@ export class GeoController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] geo/regiones pais=${pais}`);
-        const data = await this.geoUseCase.getRegiones(pais);
+        const data = await this.catalogo.getRegiones(pais);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Regiones obtenidas', data),
         );
@@ -57,7 +57,7 @@ export class GeoController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] geo/provincias region_id=${regionId}`);
-        const data = await this.geoUseCase.getProvincias(regionId);
+        const data = await this.catalogo.getProvincias(regionId);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Provincias obtenidas', data),
         );
@@ -69,7 +69,7 @@ export class GeoController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] geo/comunas provincia_id=${provinciaId}`);
-        const data = await this.geoUseCase.getComunas(provinciaId);
+        const data = await this.catalogo.getComunas(provinciaId);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Comunas obtenidas', data),
         );
@@ -81,7 +81,7 @@ export class GeoController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] bancos pais=${pais}`);
-        const data = await this.geoUseCase.getBancos(pais);
+        const data = await this.catalogo.getBancos(pais);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Bancos obtenidos', data),
         );
@@ -93,7 +93,7 @@ export class GeoController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] productos-financieros tipo_org=${tipoOrg ?? 'all'}`);
-        const data = await this.geoUseCase.getProductosFinancieros(tipoOrg);
+        const data = await this.catalogo.getProductosFinancieros(tipoOrg);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Productos financieros obtenidos', data),
         );
@@ -105,7 +105,7 @@ export class GeoController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] media-category mediaType=${mediaType}`);
-        const data = await this.geoUseCase.getMediaCategory(mediaType);
+        const data = await this.catalogo.getMediaCategory(mediaType);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Media category obtenida', data),
         );

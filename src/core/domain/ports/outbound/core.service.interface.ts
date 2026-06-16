@@ -6,6 +6,7 @@ import { UserProfileModel, UserImagesModel } from "../../models/usuario/userProf
 import { SystemNavigationModel } from "../../models/usuario/value-object/SystemNavigation.model";
 import { FacturaCreateRequestDto } from "src/infrastructure/adapters/inbound/http/dto/facturaCreate.request.dto";
 import { VersionTerminosModel } from "src/infrastructure/adapters/outbound/services/dto/versionTerminos.coreResponse";
+import { OrganizacionCreatedCoreResponse } from "src/infrastructure/adapters/outbound/services/dto/organizacionCreated.coreResponse";
 
 
 export const CORE_SERVICE_CLIENT = 'CORE_SERVICE_CLIENT';
@@ -35,14 +36,14 @@ export interface ICoreService {
 
     // ── Organización ──────────────────────────────────────────────────────    /** Verifica si un RUT ya está registrado en la plataforma.
     /* @param rut dígitos + DV concatenados sin puntos ni guión (ej: "178414453") */
-    checkRutRegistrado(rut: string): Promise<{ exists: boolean; organizacion?: { id: string; razonSocial: string; tipoPersona: string; tipoParticipante: string; giros: any[] } }>;
+    checkRutRegistrado(rut: string): Promise<{ exists: boolean; organizacion?: OrganizacionCreatedCoreResponse }>;
     crearOrganizacion(payload: {
         tipoPersona: string;
         tipoParticipacion: string;
         rut: string;
         razonSocial: string;
         giro?: string;
-    }): Promise<{ id: number; uuid: string; razonSocial: string; tipoPersona: string; tipoParticipacion: string; rut: string; dv: string }>;
+    }): Promise<OrganizacionCreatedCoreResponse>;
     /** Obtiene datos básicos de una organización por BIGINT id */
     getOrganizacionById(organizacionUUID: string): Promise<{ id: number; razonSocial: string; descripcion: string | null; logoUrl: string | null; rut: string; dv: string } | null>;
 

@@ -23,6 +23,7 @@ import { FacturaModel } from 'src/core/domain/models/factura.model';
 import { FacturaUpdateRequestDto } from '../../inbound/http/dto/facturaUpdate.request.dto';
 import { FacturaCreateRequestDto } from '../../inbound/http/dto/facturaCreate.request.dto';
 import { VersionTerminosCoreResponse, VersionTerminosModel } from './dto/versionTerminos.coreResponse';
+import { OrganizacionCreatedCoreResponse } from './dto/organizacionCreated.coreResponse';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
@@ -199,13 +200,13 @@ export class CoreServiceClientAdapter implements ICoreService {
 
     // ── Organización ─────────────────────────────────────────────────────────
 
-    async checkRutRegistrado(rut: string): Promise<{ exists: boolean; organizacion?: { id: string; razonSocial: string; tipoPersona: string; tipoParticipante: string; giros: any[] } }> {
+    async checkRutRegistrado(rut: string): Promise<{ exists: boolean; organizacion?: OrganizacionCreatedCoreResponse}> {
         try {
-            const { data } = await this.coreClient.get<ApiResponse<{ exists: boolean; organizacion?: { id: string; razonSocial: string; tipoPersona: string; tipoParticipante: string; giros: any[] } }>>(
+            const { data } = await this.coreClient.get<ApiResponse<{ exists: boolean; organizacion?: OrganizacionCreatedCoreResponse }>>(
                 `/organizacion/check-rut`,
                 { params: { rut } },
             );
-            return data.data as { exists: boolean; organizacion?: { id: string; razonSocial: string; tipoPersona: string; tipoParticipante: string; giros: any[] } };
+            return data.data as { exists: boolean; organizacion?: OrganizacionCreatedCoreResponse };
         } catch (error: any) {
             this.rethrowCoreError(error, `checkRutRegistrado | rut=${rut.slice(0, 6)}…`);
         }
@@ -219,7 +220,8 @@ export class CoreServiceClientAdapter implements ICoreService {
         giro?: string;
     }): Promise<any> {
         try {
-            const { data } = await this.coreClient.post<ApiResponse<any>>(`/organizacion`, payload);
+            const { data } = await this.coreClient.post<ApiResponse<string>>(`/organizacion`, payload);
+            console.log(data)
             return data.data;
         } catch (error: any) {
             this.rethrowCoreError(error, `crearOrganizacion | rut=${payload.rut}`);

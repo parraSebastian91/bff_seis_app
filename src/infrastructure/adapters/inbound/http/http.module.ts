@@ -20,11 +20,12 @@ import { FacturasController } from './controllers/facturas.controller';
 import { TerminosController } from './controllers/terminos.controller';
 import { MarketplaceSseController } from './controllers/marketplace-sse.controller';
 import { MarketplaceSseService } from '../../outbound/sse/marketplace-sse.service';
-import { GeoController } from './controllers/catalogo.controller';
+import { CatalogoController } from './controllers/catalogo.controller';
 import { OrganizacionBffController } from './controllers/organizacion-bff.controller';
-import { SolicitudAccesoBffController } from './controllers/solicitudAcceso.controller';
-import { OrganizacionAdminBffController } from './controllers/organizacion-admin-bff.controller';
+import { SolicitudAccesoBffController } from './controllers/solicitudAcceso-org.controller';
 import { SiiLookupService } from '../../../adapters/outbound/services/siiLookup.service';
+import { AdmGrupoTrabajoOrgController } from './controllers/adm-grupo-trabajo-org.controller';
+import { GestionTributariaOrgController } from './controllers/gestion-tributaria-org.controller';
 
 @Module({
     imports: [
@@ -41,10 +42,11 @@ import { SiiLookupService } from '../../../adapters/outbound/services/siiLookup.
         FacturasController,
         TerminosController,
         MarketplaceSseController,
-        GeoController,
         OrganizacionBffController,
         SolicitudAccesoBffController,
-        OrganizacionAdminBffController,
+        AdmGrupoTrabajoOrgController,
+        CatalogoController,
+        GestionTributariaOrgController
     ],
     providers: [
         AccessTokenContext,

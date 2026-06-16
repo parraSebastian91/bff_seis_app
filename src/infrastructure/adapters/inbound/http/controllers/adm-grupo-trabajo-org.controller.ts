@@ -1,89 +1,55 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpStatus,
-    Inject,
-    Logger,
-    Param,
-    ParseIntPipe,
-    ParseUUIDPipe,
-    Patch,
-    Post,
-    Req,
-    Res,
-    UseFilters,
-} from '@nestjs/common';
-import type { Request, Response } from 'express';
-import { GEO_USE_CASE } from 'src/core/application/application.module';
-import type { GeoCatalogoUseCase } from 'src/core/application/useCase/catalogo/geoCatalogo.usecase';
-import { ErrorHandler } from 'src/infrastructure/errors/error.handler';
-import { ApiResponse } from '../model/api-response.model';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Logger, Param, ParseUUIDPipe, Patch, Post, Req, Res, UseFilters } from "@nestjs/common";
+import type { Request, Response } from "express";
+import { ErrorHandler } from "src/infrastructure/errors/error.handler";
+import { ApiResponse } from "../model/api-response.model";
+import { ADM_GRUPOS_ORG_USE_CASE } from "src/core/application/application.module";
+import type { IAdministracionGrupoTrabajo } from "src/core/domain/ports/inbound/AdmGrupoTrabajo.interface";
 
 class CambiarRolBffDto {
     rolCodigo: string;
+    constructor(rolCodigo: string) {
+        this.rolCodigo = rolCodigo;
+    }
 }
 
 class CrearGrupoBffDto {
     nombre: string;
     descripcion?: string;
     liderUuid: string;
+    constructor(nombre: string, liderUuid: string, descripcion?: string) {
+        this.nombre = nombre;
+        this.liderUuid = liderUuid;
+        this.descripcion = descripcion;
+    }
 }
 
 class ActualizarGrupoBffDto {
     nombre: string;
     descripcion?: string;
+    constructor(nombre: string, descripcion?: string) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+    }
 }
 
 class AgregarMiembroGrupoBffDto {
     usuarioUuid: string;
     cargoEnGrupo?: string;
+    constructor(usuarioUuid: string, cargoEnGrupo?: string) {
+        this.usuarioUuid = usuarioUuid;
+        this.cargoEnGrupo = cargoEnGrupo;
+    }
 }
 
-class GenerarTokenBffDto {
-    adminUuid: string;
-    rolDestino?: string;
-}
-
-/**
- * Panel de administración de organización (BFF).
- * Ruta base: /api/bff/organizacion/:id/admin/...
- *
- * Requiere autenticación (guard global del BFF).
- * El cliente debe pasar el organizacionUUID (UUID) en la URL,
- * tal como se usa en el resto del módulo de organización.
- */
 @Controller('organizacion')
 @UseFilters(ErrorHandler)
-export class OrganizacionAdminBffController {
-
-    private readonly logger = new Logger(OrganizacionAdminBffController.name);
+export class AdmGrupoTrabajoOrgController {
+    private readonly logger = new Logger(AdmGrupoTrabajoOrgController.name);
 
     constructor(
-        @Inject(GEO_USE_CASE)
-        private readonly geo: GeoCatalogoUseCase,
+        @Inject(ADM_GRUPOS_ORG_USE_CASE) private readonly admGrupoTrabajo: IAdministracionGrupoTrabajo,
     ) { }
 
-    // ── Datos básicos ─────────────────────────────────────────────────────────
-
-    /** GET /api/bff/organizacion/:id */
-    @Get(':id')
-    async getOrganizacion(
-        @Param('id', ParseUUIDPipe) organizacionUUID: string,
-        @Res() res: Response,
-    ) {
-        this.logger.log(`[GET] organizacion id=${organizacionUUID}`);
-        const data = await this.geo.getOrganizacionById(organizacionUUID);
-        if (!data) {
-            return res.status(HttpStatus.NOT_FOUND).json(
-                new ApiResponse(HttpStatus.NOT_FOUND, 'Organización no encontrada', null),
-            );
-        }
-        return res.status(HttpStatus.OK).json(
-            new ApiResponse(HttpStatus.OK, 'Organización obtenida', data),
-        );
-    }
 
     /** GET /api/bff/organizacion/:id/mi-rol — extrae el userUuid del JWT */
     @Get(':id/mi-rol')
@@ -99,7 +65,7 @@ export class OrganizacionAdminBffController {
                 new ApiResponse(HttpStatus.UNAUTHORIZED, 'Usuario no identificado en token', null),
             );
         }
-        const result = await this.geo.getRolMiembro(organizacionUUID, usuarioUuid);
+        const result = await this.admGrupoTrabajo.getRolMiembro(organizacionUUID, usuarioUuid);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Rol obtenido', result),
         );
@@ -114,7 +80,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] miembros org=${organizacionUUID}`);
-        const data = await this.geo.listarMiembrosOrg(organizacionUUID);
+        const data = await this.admGrupoTrabajo.listarMiembrosOrg(organizacionUUID);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Miembros obtenidos', data),
         );
@@ -129,7 +95,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[PATCH] cambiarRol org=${organizacionUUID} user=${usuarioUuid} rol=${body.rolCodigo}`);
-        const result = await this.geo.cambiarRolMiembro(organizacionUUID, usuarioUuid, body.rolCodigo);
+        const result = await this.admGrupoTrabajo.cambiarRolMiembro(organizacionUUID, usuarioUuid, body.rolCodigo);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Rol actualizado', result),
         );
@@ -143,7 +109,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[DELETE] removerMiembro org=${organizacionUUID} user=${usuarioUuid}`);
-        const result = await this.geo.removerMiembro(organizacionUUID, usuarioUuid);
+        const result = await this.admGrupoTrabajo.removerMiembroGrupo(organizacionUUID, usuarioUuid);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Miembro removido', result),
         );
@@ -158,7 +124,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] grupos org=${organizacionUUID}`);
-        const data = await this.geo.listarGruposOrg(organizacionUUID);
+        const data = await this.admGrupoTrabajo.listarGruposOrg(organizacionUUID);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Grupos obtenidos', data),
         );
@@ -172,7 +138,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[POST] crearGrupo org=${organizacionUUID} nombre=${body.nombre}`);
-        const result = await this.geo.crearGrupoOrg(organizacionUUID, body);
+        const result = await this.admGrupoTrabajo.crearGrupoOrg(organizacionUUID, body);
         return res.status(HttpStatus.CREATED).json(
             new ApiResponse(HttpStatus.CREATED, 'Grupo creado', result),
         );
@@ -186,7 +152,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[PATCH] actualizarGrupo grupo=${grupoId}`);
-        const result = await this.geo.actualizarGrupo(grupoId, body);
+        const result = await this.admGrupoTrabajo.actualizarGrupo(grupoId, body);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Grupo actualizado', result),
         );
@@ -199,7 +165,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[DELETE] eliminarGrupo grupo=${grupoId}`);
-        const result = await this.geo.eliminarGrupo(grupoId);
+        const result = await this.admGrupoTrabajo.eliminarGrupo(grupoId);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Grupo eliminado', result),
         );
@@ -213,7 +179,7 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[POST] agregarMiembro grupo=${grupoId} user=${body.usuarioUuid}`);
-        const result = await this.geo.agregarMiembroGrupo(grupoId, body);
+        const result = await this.admGrupoTrabajo.agregarMiembroGrupo(grupoId, body);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Miembro agregado al grupo', result),
         );
@@ -227,25 +193,14 @@ export class OrganizacionAdminBffController {
         @Res() res: Response,
     ) {
         this.logger.log(`[DELETE] removerMiembroGrupo grupo=${grupoId} user=${usuarioUuid}`);
-        const result = await this.geo.removerMiembroGrupo(grupoId, usuarioUuid);
+        const result = await this.admGrupoTrabajo.removerMiembroGrupo(grupoId, usuarioUuid);
         return res.status(HttpStatus.OK).json(
             new ApiResponse(HttpStatus.OK, 'Miembro removido del grupo', result),
         );
     }
 
-    // ── Enrolamiento ──────────────────────────────────────────────────────────
+    
 
-    /** POST /api/bff/organizacion/:id/generar-token-enrolamiento */
-    @Post(':id/generar-token-enrolamiento')
-    async generarToken(
-        @Param('id', ParseUUIDPipe) organizacionUUID: string,
-        @Body() body: GenerarTokenBffDto,
-        @Res() res: Response,
-    ) {
-        this.logger.log(`[POST] generarToken org=${organizacionUUID} admin=${body.adminUuid}`);
-        const result = await this.geo.generarTokenEnrolamiento(organizacionUUID, body);
-        return res.status(HttpStatus.CREATED).json(
-            new ApiResponse(HttpStatus.CREATED, 'Token de enrolamiento generado', result),
-        );
-    }
+
+
 }
