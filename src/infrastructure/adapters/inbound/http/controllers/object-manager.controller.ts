@@ -69,11 +69,12 @@ export class ObjectManagerController {
         }
         switch (objectType) {
             case CATEGORY_PROCESS.DOCUMENT_DTE:
-                if (!organization) {
-                    throw new ParameterNotFoundError("El parámetro 'organization' es requerido para el tipo de objeto 'documents'");
-                }
-                break;
             case CATEGORY_PROCESS.DOCUMENT_DTE_RESPALDO:
+            case CATEGORY_PROCESS.DOCUMENT_OC:
+            case CATEGORY_PROCESS.DOCUMENT_GD:
+            case CATEGORY_PROCESS.DCOUMENT_AE:
+            case CATEGORY_PROCESS.DOCUMENT_EP:
+            case CATEGORY_PROCESS.DOCUMENT_HIS:
                 if (!organization) {
                     throw new ParameterNotFoundError("El parámetro 'organization' es requerido para el tipo de objeto 'documents respaldo'");
                 }
@@ -82,7 +83,7 @@ export class ObjectManagerController {
                 }
                 break;
         }
-        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType, userName, organization, idFactura);
+        const rul = await this.objectManagerUseCase.ExecuteGetPresignedPutUrl(objectType as string, userSession["userUuid"], fileName, fileType, userName, req["correlationId"], organization, idFactura);
 
         return resp.status(200).json(
             new ApiResponse(HttpStatus.OK, "Presigned URL obtenida exitosamente", {

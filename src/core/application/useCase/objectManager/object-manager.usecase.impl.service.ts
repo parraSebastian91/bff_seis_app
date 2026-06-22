@@ -57,19 +57,17 @@ export class ObjectManagerService implements IObjectManagerUseCase {
         };
     }
 
-    async ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, name: string, fileType: string, userName: string, organization?: string, idFactura?: string): Promise<string> {
+    async ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, name: string, fileType: string, userName: string, correlationId: string, organization?: string, idFactura?: string): Promise<string> {
         const startedAt = Date.now();
         const fileName = name.split('.')[0].toLowerCase();
         const normalizedFileType = this.normalizeFormatFileType(fileType);
         this.logger.log(`[START] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${normalizedFileType} | userName=${userName} | organization=${organization}`);
 
         try {
-            const { url, assetId } = await this.storageService.getPresignedPutUrl(userUuid, objectType, fileName, normalizedFileType, userName, organization);
+
+            const objectKey = await this.coreService.getPutPresignedUrl(userUuid, objectType, fileName, fileType, userName, correlationId, organization, idFactura);
+            const { url } = await this.storageService.getPresignedPutUrl(objectKey, correlationId);
             this.logger.log(`[OK] Presigned URL obtenida | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
-            if (objectType === CATEGORY_PROCESS.DOCUMENT_DTE_RESPALDO && idFactura && organization) {
-                const updateData: FacturaUpdateRequestDto = new FacturaUpdateRequestDto(idFactura, organization, userName, new CampoEditado(CampoFactura.ASSET_ID, assetId));
-                await this.coreService.updateFactura(updateData);
-            }
             return url;
         } catch (error: any) {
             this.logger.error(`[FAIL] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);

@@ -24,6 +24,7 @@ import { FacturaUpdateRequestDto } from '../../inbound/http/dto/facturaUpdate.re
 import { FacturaCreateRequestDto } from '../../inbound/http/dto/facturaCreate.request.dto';
 import { VersionTerminosCoreResponse, VersionTerminosModel } from './dto/versionTerminos.coreResponse';
 import { OrganizacionCreatedCoreResponse } from './dto/organizacionCreated.coreResponse';
+import { MediaCategoryRow } from './dto/categorias.coreResponse';
 
 @Injectable()
 export class CoreServiceClientAdapter implements ICoreService {
@@ -199,7 +200,7 @@ export class CoreServiceClientAdapter implements ICoreService {
 
     // ── Organización ─────────────────────────────────────────────────────────
 
-    async checkRutRegistrado(rut: string): Promise<{ exists: boolean; organizacion?: OrganizacionCreatedCoreResponse}> {
+    async checkRutRegistrado(rut: string): Promise<{ exists: boolean; organizacion?: OrganizacionCreatedCoreResponse }> {
         try {
             const { data } = await this.coreClient.get<ApiResponse<{ exists: boolean; organizacion?: OrganizacionCreatedCoreResponse }>>(
                 `/organizacion/check-rut`,
@@ -529,13 +530,25 @@ export class CoreServiceClientAdapter implements ICoreService {
 
     async getMediaCategory(mediaType: string): Promise<{ codigo: number; nombre: string }[]> {
         try {
-            const { data } = await this.coreClient.get<ApiResponse<{ codigo: number; nombre: string }[]>>(
+            const { data } = await this.coreClient.get<ApiResponse<MediaCategoryRow[]>>(
                 `/catalogo/media-category`,
                 { params: { mediaType } },
             );
             return data.data as any[];
         } catch (error: any) {
             this.rethrowCoreError(error, `getMediaCategory | mediaType=${mediaType}`);
+        }
+    }
+
+    async getPutPresignedUrl(userUuid: string, objectType: string, fileName: string, normalizedFileType: string, userName: string, correlationId: string, organization?: string, idFactura?: string): Promise<string> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<string>>(
+                `/storage/object-url`,
+                { params: { UUID: userUuid, object_type: objectType, file_name: fileName, content_type: normalizedFileType, gestor: userName, correlation_id: correlationId, organization: organization, id_factura: idFactura } },
+            );
+            return data.data || '';
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getPutPresignedUrl | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName}`);
         }
     }
 

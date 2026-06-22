@@ -99,9 +99,9 @@ export class CatalogoController {
         );
     }
 
-    @Get('media-category/:mediaType')
+    @Get('media-category')
     async getMediaCategory(
-        @Param('mediaType') mediaType: string,
+        @Query('mediaType') mediaType: string,
         @Res() res: Response,
     ) {
         this.logger.log(`[GET] media-category mediaType=${mediaType}`);

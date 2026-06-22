@@ -12,9 +12,18 @@ export enum createdBy {
 
 export enum CATEGORY_PROCESS {
     USER_AVATAR = "user-avatar",
+    ORG_AVATAR = "org-avatar",
     USER_BANNER = "user-banner",
+    ORG_BANNER = "org-banner",
     DOCUMENT_DTE = "DTE-factura",
     DOCUMENT_DTE_RESPALDO = "DTE-factura-respaldo",
+    DOCUMENT_OC = "orden-compra",
+    DOCUMENT_GD = "guia-despacho",
+    DCOUMENT_AE = "acta-entrega",
+    DOCUMENT_EP = "estado-pago",
+    DOCUMENT_HIS = "hoja-entrada-servicio",
+    SOCIAL_POST = "social-post",
+    OTHER = "OTHER",
 }
 
 export enum EVENT_CODES {

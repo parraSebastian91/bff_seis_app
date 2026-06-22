@@ -15,22 +15,22 @@ export class StorageServiceAdapter implements IStorageService {
         @Inject(STORAGE_SERVICE) private readonly storageClient: AxiosInstance,
     ) { }
 
-    async getPresignedPutUrl(userUuid: string, objectType: string, fileName: string, fileType: string, userName: string, organization?: string): Promise<{url: string, assetId: string}> {
+    async getPresignedPutUrl(objectKey: string, correlationId: string): Promise<{url: string, assetId: string}> {
         const startedAt = Date.now();
-        this.logger.log(`[START] Storage.getPresignedPutUrl | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${fileType} | userName=${userName} | organization=${organization}`);
+        this.logger.log(`[START] Storage.getPresignedPutUrl | objectKey=${objectKey} | correlationId=${correlationId}`);
 
         try {
-            const { data } = await this.storageClient.get<ApiResponse<{url: string, assetId: string}>>(`api/v1/put-url?UUID=${userUuid}&object_type=${objectType}&file_name=${fileName}&content_type=${fileType}&gestor=${userName}&organization=${organization}`);
-            this.logger.log(`[OK] Storage.getPresignedPutUrl | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
+            const { data } = await this.storageClient.get<ApiResponse<{url: string, assetId: string}>>(`api/v1/put-url?storage_key=${objectKey}&correlation_id=${correlationId}`);
+            this.logger.log(`[OK] Storage.getPresignedPutUrl | objectKey=${objectKey} | correlationId=${correlationId} | durationMs=${Date.now() - startedAt}`);
             const url = data['url'];
             const assetId = data['assetId'];
             return { url, assetId };
         } catch (error: any) {
             if (isAxiosError(error) && error.response?.status === 404) {
-                this.logger.warn(`[MISS] Storage.getPresignedPutUrl 404 | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
-                throw new NotFoundException(`Presigned URL not found for user ${userUuid} and object type ${objectType}`);
+                this.logger.warn(`[MISS] Storage.getPresignedPutUrl 404 | objectKey=${objectKey} | correlationId=${correlationId} | durationMs=${Date.now() - startedAt}`);
+                throw new NotFoundException(`Presigned URL not found for object key ${objectKey} and correlation ID ${correlationId}`);
             }
-            this.logger.error(`Error consultando servicio Storage para usuario ${userUuid} y tipo de objeto ${objectType}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
+            this.logger.error(`Error consultando servicio Storage para object key ${objectKey} y correlation ID ${correlationId}: ${error.message} | durationMs=${Date.now() - startedAt}`, error.stack);
             this.logger.debug(error.response ? `Respuesta del servicio Storage: ${JSON.stringify(error.response.data)}` : 'No response data');
             throw new InternalServerErrorException('Error consultando servicio Storage');
         }
