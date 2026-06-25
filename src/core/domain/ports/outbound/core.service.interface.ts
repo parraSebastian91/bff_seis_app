@@ -102,4 +102,5 @@ export interface ICoreService {
     // Catalogos de MEDIA schema
     getMediaCategory(mediaType: string): Promise<any[]>;
     getPutPresignedUrl(userUuid: string, objectType: string, fileName: string, normalizedFileType: string, userName: string, correlationId: string, organization?: string, idFactura?: string): Promise<string>;
+    getGetPresignedUrl(assetId: string, userUuid: string, orgUuid: string, correlationId: string): Promise<{ objectKey: string, ttlSeconds: number }>;
 }

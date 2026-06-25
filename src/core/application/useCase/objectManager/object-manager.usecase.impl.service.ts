@@ -9,8 +9,7 @@ import type { IStorageRepository } from './../../../../core/domain/ports/outboun
 import { ObjectUploadPayload } from './command/uploadObject.command';
 import type { IStorageService } from 'src/core/domain/ports/outbound/storage.service.interface';
 import type { ICoreService } from 'src/core/domain/ports/outbound/core.service.interface';
-import { CampoEditado, CampoFactura, FacturaUpdateRequestDto } from 'src/infrastructure/adapters/inbound/http/dto/facturaUpdate.request.dto';
-import { CATEGORY_PROCESS } from 'src/core/domain/models/constantes.model';
+import { ObjectKeyNotFoundError } from 'src/core/domain/errors/ObjectKey.error';
 
 const PATH_TYPES = {
     USER_AVATAR: 'user-avatar',
@@ -64,13 +63,30 @@ export class ObjectManagerService implements IObjectManagerUseCase {
         this.logger.log(`[START] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName} | fileType=${normalizedFileType} | userName=${userName} | organization=${organization}`);
 
         try {
-
             const objectKey = await this.coreService.getPutPresignedUrl(userUuid, objectType, fileName, fileType, userName, correlationId, organization, idFactura);
             const { url } = await this.storageService.getPresignedPutUrl(objectKey, correlationId);
             this.logger.log(`[OK] Presigned URL obtenida | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt}`);
             return url;
         } catch (error: any) {
             this.logger.error(`[FAIL] Solicitar presigned URL | userUuid=${userUuid} | objectType=${objectType} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
+            throw error;
+        }
+    }
+
+    async ExecuteGetPresignedGetUrl(assetId: string, userUuid: string, orgUuid: string, correlationId: string): Promise<{url: string, ttlSeconds: number}> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] Solicitar presigned GET URL | userUuid=${userUuid} | correlationId=${correlationId}`);
+
+        try {
+            const { objectKey, ttlSeconds } = await this.coreService.getGetPresignedUrl(assetId, userUuid, orgUuid, correlationId);
+            if (!objectKey) {
+                throw new ObjectKeyNotFoundError(`No se pudo obtener el objectKey para assetId=${assetId}, userUuid=${userUuid}, orgUuid=${orgUuid}`);
+            }
+            const url = await this.storageService.getPresignedGetUrl(objectKey, correlationId);
+            this.logger.log(`[OK] Presigned GET URL obtenida | userUuid=${userUuid} | correlationId=${correlationId} | durationMs=${Date.now() - startedAt}`);
+            return { url, ttlSeconds };
+        } catch (error: any) {
+            this.logger.error(`[FAIL] Solicitar presigned GET URL | userUuid=${userUuid} | correlationId=${correlationId} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
             throw error;
         }
     }

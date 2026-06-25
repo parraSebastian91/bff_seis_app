@@ -13,7 +13,6 @@ import { UserProfileCoreDTO } from './dto/UserProfile.core-service.dto';
 import { UserImagesModel, UserProfileModel } from 'src/core/domain/models/usuario/userProfile.model';
 import { ProfileImageCoreQueryResponse } from './dto/ProfileImageCoreResponse.dto';
 import { ConfigService } from '@nestjs/config';
-import { ProfileImageError } from 'src/core/domain/errors/ProfileImage.error';
 import { UserProfileReqResDTO } from 'src/infrastructure/adapters/inbound/http/dto/userProfile.req.res.dto';
 import { SystemNavigationModel } from 'src/core/domain/models/usuario/value-object/SystemNavigation.model';
 import { UserOrganizacionProfileModel } from 'src/core/domain/models/usuario/userOrganizacionProfile.model';
@@ -549,6 +548,18 @@ export class CoreServiceClientAdapter implements ICoreService {
             return data.data || '';
         } catch (error: any) {
             this.rethrowCoreError(error, `getPutPresignedUrl | userUuid=${userUuid} | objectType=${objectType} | fileName=${fileName}`);
+        }
+    }
+
+    async getGetPresignedUrl(assetId: string, userUuid: string, orgUuid: string, correlationId: string): Promise<{ objectKey: string, ttlSeconds: number }> {
+        try {
+            const { data } = await this.coreClient.get<ApiResponse<{ objectKey: string, ttlSeconds: number }>>(
+                `/storage/object-url/${assetId}`,
+                { params: { userUuid, orgUuid, correlation_id: correlationId } },
+            );
+            return data.data || { objectKey: '', ttlSeconds: 0 };
+        } catch (error: any) {
+            this.rethrowCoreError(error, `getGetPresignedUrl | assetId=${assetId} `);
         }
     }
 

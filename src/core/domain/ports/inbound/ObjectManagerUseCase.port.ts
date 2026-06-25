@@ -5,6 +5,7 @@ export interface IObjectManagerUseCase {
 
     ExecuteCreateObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any>;
     ExecuteGetPresignedPutUrl(objectType: string, userUuid: string, fileName: string, fileType: string, userName: string, correlationId: string, organization?: string, idFactura?: string): Promise<string>;
+    ExecuteGetPresignedGetUrl(assetId: string, userUuid: string, orgUuid: string, correlationId: string): Promise<{url: string, ttlSeconds: number}>;
     ExecuteUploadObject(file: ObjectUploadPayload, objectType: string, userUuid: string): Promise<any>;
     
 }

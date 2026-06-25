@@ -2,7 +2,7 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { Controller, Get, HttpStatus, Inject, Post, Put, Req, Res, UploadedFile, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Post, Put, Req, Res, UploadedFile, UseFilters, UseInterceptors, Query } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import type { File } from 'multer';
@@ -52,6 +52,24 @@ export class ObjectManagerController {
             message: "Objeto creado exitosamente",
             data: createdObject
         });
+    }
+
+    @Get(":assetId/presigned-url")
+    @Roles("USR_STD")
+    async getPresignedPutUrlByAssetId(
+        @Req() req: Request,
+        @Res() resp: Response,
+        @Query('orgUuid') orgUuid: string
+    ) {
+        const userSession = req["user"];
+        const { assetId } = req.params;
+        const {url, ttlSeconds} = await this.objectManagerUseCase.ExecuteGetPresignedGetUrl(assetId as string, userSession["userUuid"], orgUuid, req["correlationId"]);
+        return resp.status(200).json(
+            new ApiResponse(HttpStatus.OK, "Presigned URL obtenida exitosamente", {
+                url: url,
+                ttlSeconds: ttlSeconds
+            })
+        );
     }
 
 

@@ -1,6 +1,7 @@
 import { Catch, ExceptionFilter, ArgumentsHost, HttpException, Logger, HttpStatus, ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { TokenExpiredError } from "@nestjs/jwt";
 import { Request, Response } from "express";
+import { ObjectKeyNotFoundError } from "src/core/domain/errors/ObjectKey.error";
 import { ParameterNotFoundError } from "src/core/domain/errors/ParameterNotFound.error";
 import { ProfileImageError } from "src/core/domain/errors/ProfileImage.error";
 
@@ -37,7 +38,12 @@ export class ErrorHandler implements ExceptionFilter {
                 ? (body as any).message
                 : exception.message;
             Logger.warn(`HttpException from upstream | status=${status} | message=${message}`);
+        } else if (exception instanceof ObjectKeyNotFoundError) {
+            Logger.warn(`ObjectKeyNotFoundError: ${exception.message}`);
+            status = HttpStatus.NOT_FOUND;
+            message = exception.message;
         }
+
         else {
             Logger.error(`Unexpected error: ${exception.message}`, exception.stack);
             status = HttpStatus.INTERNAL_SERVER_ERROR;
