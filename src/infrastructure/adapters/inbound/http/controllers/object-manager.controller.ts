@@ -72,6 +72,34 @@ export class ObjectManagerController {
         );
     }
 
+    /**
+     * Devuelve el contenido del objeto como bytes — la URL de MinIO nunca sale del BFF.
+     * El cliente recibe un blob que Angular convierte en un blob: URL local
+     * (no compartible, no persistente, destruido al cerrar la pestaña).
+     */
+    @Get(":assetId/view")
+    @Roles("USR_STD")
+    async viewObject(
+        @Req() req: Request,
+        @Res() resp: Response,
+        @Query('orgUuid') orgUuid: string,
+    ) {
+        const userSession = req["user"];
+        const { assetId } = req.params;
+        const { buffer, contentType } = await this.objectManagerUseCase.ExecuteStreamObject(
+            assetId as string,
+            userSession["userUuid"],
+            orgUuid,
+            req["correlationId"],
+        );
+        resp.setHeader('Content-Type', contentType);
+        resp.setHeader('Content-Length', buffer.length);
+        resp.setHeader('Cache-Control', 'private, no-store');       // no caching in browser
+        resp.setHeader('X-Content-Type-Options', 'nosniff');
+        resp.setHeader('Content-Disposition', 'inline');
+        return resp.status(200).end(buffer);
+    }
+
 
     @Get("presigned-url/:objectType")
     @Roles("USR_STD")

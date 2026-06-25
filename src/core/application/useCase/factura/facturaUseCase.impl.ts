@@ -1,6 +1,4 @@
 import { Logger } from "@nestjs/common";
-import { url } from "node:inspector";
-import { facturaEstado } from "src/core/domain/models/constantes.model";
 import { FacturaModel } from "src/core/domain/models/factura.model";
 import { IFacturaUseCase } from "src/core/domain/ports/inbound/facturaUseCase.port";
 import { ICoreService } from "src/core/domain/ports/outbound/core.service.interface";
@@ -25,37 +23,9 @@ export class FacturaUseCaseImpl implements IFacturaUseCase {
         this.logger.log(`[START] GetFacturas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId} | filtro=${filtro}`);
 
         try {
-            const facturas = await this.facturaCoreService.getFacturasByUserUUID(userUUID, organizacionUUID, filtro);
-            const facturasConStorageKey = facturas.filter((factura) => factura.assetId);
-
-            if (facturasConStorageKey.length === 0) {
-                this.logger.log(`[OK] GetFacturas | userUuid=${userUUID} | totalFacturas=${facturas.length} | facturasConURL=0 | durationMs=${Date.now() - startedAt}`);
-                return facturas;
-            }
-
-            const urlByIdRequest = await this.facturaCoreService.getUrlFactura(facturasConStorageKey, userUUID, organizacionUUID, correlationId);
-
-            const result = facturas.map((factura) => {
-                if (!factura.assetId) {
-                    factura.url_factura = 'N/A';
-                    return factura;
-                }
-
-                const urlData = urlByIdRequest.find(url => url.id === factura.facturaId);
-                console.log(urlData)
-                if (urlData) {
-                    factura.url_factura = urlData.keyUrl;
-                    this.logger.debug(`URL asignada para factura ${factura.facturaId}`);
-                } else {
-                    factura.url_factura = 'N/A';
-                    this.logger.warn(`No se encontró URL para factura con ID ${factura.facturaId} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId}`);
-                }
-                console.log(`FacturaID: ${factura.facturaId}, URL: ${factura.url_factura}`);
-                return factura;
-            });
-
-            this.logger.log(`[OK] GetFacturas | userUuid=${userUUID} | totalFacturas=${facturas.length} | facturasConURL=${facturasConStorageKey.length} | durationMs=${Date.now() - startedAt}`);
-            return result;
+            const facturas = await this.facturaCoreService.getFacturasByUserUUID(userUUID, organizacionUUID, filtro);            
+            this.logger.log(`[OK] GetFacturas | userUuid=${userUUID} | totalFacturas=${facturas.length} | durationMs=${Date.now() - startedAt}`);
+            return facturas;
         } catch (error: any) {
             this.logger.error(`Error en GetFacturas | userUuid=${userUUID} | organizacionUUID=${organizacionUUID} | correlationId=${correlationId} | error=${error?.message} | durationMs=${Date.now() - startedAt}`, error.stack);
             throw error;

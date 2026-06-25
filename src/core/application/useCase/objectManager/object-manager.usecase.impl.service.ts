@@ -116,4 +116,36 @@ export class ObjectManagerService implements IObjectManagerUseCase {
         }
     }
 
+    /**
+     * Descarga el objeto directamente desde MinIO usando el cliente interno del BFF.
+     * Nunca genera ni expone una URL de MinIO — el BFF se conecta a minio:9000
+     * internamente y devuelve los bytes crudos. La URL de MinIO nunca sale del servidor.
+     */
+    async ExecuteStreamObject(
+        assetId: string,
+        userUuid: string,
+        orgUuid: string,
+        correlationId: string,
+    ): Promise<{ buffer: Buffer; contentType: string }> {
+        const startedAt = Date.now();
+        this.logger.log(`[START] StreamObject | userUuid=${userUuid} | assetId=${assetId} | correlationId=${correlationId}`);
+        try {
+            // 1. Obtener objectKey con validación de permiso (igual que presigned-url)
+            const { objectKey } = await this.coreService.getGetPresignedUrl(assetId, userUuid, orgUuid, correlationId);
+            if (!objectKey) {
+                throw new ObjectKeyNotFoundError(`StreamObject: no objectKey para assetId=${assetId}`);
+            }
+
+            // 2. Descargar directamente desde MinIO via cliente interno (minio:9000)
+            //    Sin generar ninguna URL pública — resuelve el problema de localhost en Docker
+            const { buffer, contentType } = await this.storageRepository.getObjectBuffer(objectKey);
+
+            this.logger.log(`[OK] StreamObject | assetId=${assetId} | bytes=${buffer.length} | durationMs=${Date.now() - startedAt}`);
+            return { buffer, contentType };
+        } catch (error: any) {
+            this.logger.error(`[FAIL] StreamObject | assetId=${assetId} | durationMs=${Date.now() - startedAt} | reason=${error?.message ?? error}`);
+            throw error;
+        }
+    }
+
 }
