@@ -16,7 +16,7 @@ RUN npm ci
 COPY . .
 
 # Compilar TypeScript (si aplica)
-RUN npm run build 2>/dev/null || true
+RUN npm run build
 
 # =============================================================================
 # STAGE: Development
@@ -47,36 +47,30 @@ CMD [ "npm", "run", "start:dev" ]
 # =============================================================================
 # STAGE: Production
 # =============================================================================
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Usuario no-root
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# curl + jq: los usa entrypoint-with-vault.sh; dumb-init: manejo de señales
+RUN apk add --no-cache curl jq bash dumb-init
 
-# Copiar package.json
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001 -G nodejs
+
 COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Instalar solo dependencias de producción
-RUN npm ci --only=production && npm cache clean --force
-
-# Copiar código compilado desde builder
 COPY --from=builder /build/dist ./dist
-COPY --from=builder /build/src ./src
 
-# Cambiar propietario
-RUN chown -R nodejs:nodejs /app
+COPY --chown=nodejs:nodejs entrypoint-with-vault.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh && chown -R nodejs:nodejs /app
 
-# Usuario nodejs
 USER nodejs
 
-# Expose puerto
 EXPOSE 3002
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 --start-period=40s \
-  CMD wget --quiet --tries=1 --spider http://localhost:3002/health || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:3002/health || exit 1
 
-# Comando por defecto
-CMD [ "node", "dist/main.js" ]
+# Secrets desde Vault (mismo lineamiento que ms-identity y ms-core)
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["dumb-init", "--", "node", "dist/src/main.js"]
