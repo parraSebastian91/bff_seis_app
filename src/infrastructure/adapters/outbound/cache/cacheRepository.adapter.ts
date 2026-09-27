@@ -106,6 +106,12 @@ export class CacheRepositoryAdapter implements ICacheRepository {
     }
 
     private getTokenFromObject(value: Record<string, unknown>): string | null {
+        // Keyv (cache-manager) guarda { value: <token> }; ms-identity escribe así la sesión en Redis.
+        const wrapped = value.value;
+        if (typeof wrapped === 'string' && this.looksLikeJwt(wrapped)) {
+            return wrapped;
+        }
+
         const token = value.accessToken;
         if (typeof token === 'string' && this.looksLikeJwt(token)) {
             return token;
@@ -123,7 +129,7 @@ export class CacheRepositoryAdapter implements ICacheRepository {
     }
 
     private looksLikeJwt(value: string): boolean {
-        return value.split('.').length === 3;
+        return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*$/.test(value);
     }
 
     async validateConexion(): Promise<void> {
